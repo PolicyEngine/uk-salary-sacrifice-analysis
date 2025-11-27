@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UK Salary Sacrifice Cap Analysis - Interactive Charts</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: #f5f5f5;
+            color: #333;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        h1 {
+            color: #2C6496;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            color: #666;
+            font-size: 1.1rem;
+        }
+        .chart-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 30px;
+            margin-top: 30px;
+        }
+        .chart-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .chart-card h2 {
+            background: #2C6496;
+            color: white;
+            padding: 15px 20px;
+            font-size: 1.2rem;
+        }
+        .chart-card p {
+            padding: 15px 20px;
+            color: #666;
+            font-size: 0.95rem;
+            border-bottom: 1px solid #eee;
+        }
+        .chart-embed {
+            width: 100%;
+            height: 550px;
+            border: none;
+        }
+        .embed-instructions {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 40px;
+        }
+        .embed-instructions h3 {
+            color: #2C6496;
+            margin-bottom: 10px;
+        }
+        .embed-instructions code {
+            background: #e9ecef;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+        .embed-instructions pre {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 15px;
+            border-radius: 6px;
+            overflow-x: auto;
+            margin-top: 10px;
+        }
+        footer {
+            text-align: center;
+            margin-top: 50px;
+            padding: 20px;
+            color: #666;
+        }
+        footer a {
+            color: #2C6496;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>UK Salary Sacrifice Cap Analysis</h1>
+            <p class="subtitle">Interactive visualizations exploring the fiscal and distributional impacts of a £2,000 salary sacrifice pension cap</p>
+        </header>
+
+        <div class="chart-grid">
+            <div class="chart-card">
+                <h2>Revenue Impact by Year</h2>
+                <p>Annual government revenue raised under different employer and employee behavioral responses. Toggle between scenarios using the controls.</p>
+                <iframe src="revenue-by-year.html" class="chart-embed"></iframe>
+            </div>
+
+            <div class="chart-card">
+                <h2>Distributional Impact by Income Decile</h2>
+                <p>How the policy affects households across the income distribution. Shows average change in net income by decile.</p>
+                <iframe src="distributional-impact.html" class="chart-embed"></iframe>
+            </div>
+        </div>
+
+        <div class="embed-instructions">
+            <h3>Embedding These Charts</h3>
+            <p>To embed any chart in your blog or website, use an iframe with the direct URL:</p>
+            <pre>&lt;iframe
+  src="https://policyengine.github.io/uk-salary-sacrifice-analysis/revenue-by-year.html"
+  width="100%"
+  height="550"
+  frameborder="0"
+&gt;&lt;/iframe&gt;</pre>
+            <p style="margin-top: 15px;">Available chart URLs:</p>
+            <ul style="margin-left: 20px; margin-top: 10px;">
+                <li><code>revenue-by-year.html</code> - Revenue impact over time with 2x2 scenario toggles</li>
+                <li><code>distributional-impact.html</code> - Impact by income decile with 2x2 scenario toggles</li>
+            </ul>
+        </div>
+
+        <footer>
+            <p>Analysis by <a href="https://policyengine.org" target="_blank">PolicyEngine</a> |
+               <a href="https://github.com/PolicyEngine/uk-salary-sacrifice-analysis" target="_blank">Source Code</a></p>
+        </footer>
+    </div>
+</body>
+</html>

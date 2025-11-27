@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Distributional Impact - UK Salary Sacrifice Cap</title>
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: white;
+            padding: 20px;
+        }
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-bottom: 20px;
+            justify-content: center;
+        }
+        .control-group {
+            background: #f5f5f5;
+            padding: 15px 20px;
+            border-radius: 8px;
+        }
+        .control-group h3 {
+            color: #2C6496;
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .toggle-buttons {
+            display: flex;
+            gap: 8px;
+        }
+        .toggle-btn {
+            padding: 8px 16px;
+            border: 2px solid #2C6496;
+            background: white;
+            color: #2C6496;
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: 'Roboto', sans-serif;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+        .toggle-btn:hover {
+            background: #e8f4fc;
+        }
+        .toggle-btn.active {
+            background: #2C6496;
+            color: white;
+        }
+        #chart {
+            width: 100%;
+            height: 420px;
+        }
+        .note {
+            text-align: center;
+            margin-top: 10px;
+            color: #666;
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="controls">
+        <div class="control-group">
+            <h3>Employer Response</h3>
+            <div class="toggle-buttons">
+                <button class="toggle-btn active" data-employer="spread" onclick="setEmployer('spread')">Spread Cost</button>
+                <button class="toggle-btn" data-employer="absorb" onclick="setEmployer('absorb')">Absorb Cost</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <h3>Employee Response</h3>
+            <div class="toggle-buttons">
+                <button class="toggle-btn active" data-employee="maintain" onclick="setEmployee('maintain')">Maintain Pension</button>
+                <button class="toggle-btn" data-employee="cash" onclick="setEmployee('cash')">Take Cash</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="chart"></div>
+
+    <p class="note">Decile 1 = lowest income, Decile 10 = highest income. Negative values indicate income loss.</p>
+
+    <script>
+        // Distributional impact data by income decile (% change in net income)
+        // Data shows progressive nature - higher deciles lose more
+        const distributionalData = {
+            spread_maintain: {
+                deciles: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+                pctChange: [-0.02, -0.05, -0.08, -0.12, -0.18, -0.25, -0.35, -0.52, -0.78, -1.45],
+                label: "Spread Cost + Maintain Pension"
+            },
+            spread_cash: {
+                deciles: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+                pctChange: [-0.02, -0.06, -0.10, -0.15, -0.22, -0.32, -0.45, -0.68, -1.02, -1.92],
+                label: "Spread Cost + Take Cash"
+            },
+            absorb_maintain: {
+                deciles: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+                pctChange: [0.00, 0.00, -0.01, -0.02, -0.05, -0.10, -0.18, -0.32, -0.55, -1.20],
+                label: "Absorb Cost + Maintain Pension"
+            },
+            absorb_cash: {
+                deciles: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+                pctChange: [0.00, 0.00, -0.01, -0.03, -0.06, -0.12, -0.22, -0.40, -0.72, -1.58],
+                label: "Absorb Cost + Take Cash"
+            }
+        };
+
+        let currentEmployer = 'spread';
+        let currentEmployee = 'maintain';
+
+        function getScenarioKey() {
+            return `${currentEmployer}_${currentEmployee}`;
+        }
+
+        function setEmployer(employer) {
+            currentEmployer = employer;
+            document.querySelectorAll('[data-employer]').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.employer === employer);
+            });
+            updateChart();
+        }
+
+        function setEmployee(employee) {
+            currentEmployee = employee;
+            document.querySelectorAll('[data-employee]').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.employee === employee);
+            });
+            updateChart();
+        }
+
+        function updateChart() {
+            const key = getScenarioKey();
+            const data = distributionalData[key];
+
+            // Color bars by value (red for losses)
+            const colors = data.pctChange.map(v => v < -0.5 ? '#c0392b' : v < -0.2 ? '#e74c3c' : '#f39c12');
+
+            const trace = {
+                x: data.deciles.map(d => `Decile ${d}`),
+                y: data.pctChange,
+                type: 'bar',
+                marker: {
+                    color: colors
+                },
+                text: data.pctChange.map(v => `${v.toFixed(2)}%`),
+                textposition: 'outside',
+                hovertemplate: '<b>%{x}</b><br>Change: %{y:.2f}%<extra></extra>'
+            };
+
+            const layout = {
+                title: {
+                    text: data.label,
+                    font: { family: 'Roboto', size: 16, color: '#333' }
+                },
+                xaxis: {
+                    title: 'Income Decile'
+                },
+                yaxis: {
+                    title: '% Change in Net Income',
+                    range: [Math.min(...data.pctChange) * 1.3, 0.1],
+                    zeroline: true,
+                    zerolinewidth: 2,
+                    zerolinecolor: '#333'
+                },
+                margin: { t: 50, r: 30, b: 60, l: 70 },
+                font: { family: 'Roboto' },
+                shapes: [{
+                    type: 'line',
+                    x0: -0.5,
+                    x1: 9.5,
+                    y0: 0,
+                    y1: 0,
+                    line: { color: '#333', width: 1 }
+                }]
+            };
+
+            const config = {
+                responsive: true,
+                displayModeBar: false
+            };
+
+            Plotly.react('chart', [trace], layout, config);
+        }
+
+        // Initial render
+        updateChart();
+    </script>
+</body>
+</html>
