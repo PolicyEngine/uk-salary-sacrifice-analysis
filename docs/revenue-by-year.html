@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Revenue Impact by Year - UK Salary Sacrifice Cap</title>
+    <title>Revenue Impact - UK Salary Sacrifice Cap</title>
     <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
@@ -17,193 +17,116 @@
             background: white;
             padding: 20px;
         }
-        .controls {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 20px;
+        h2 {
+            text-align: center;
+            color: #2C6496;
             margin-bottom: 20px;
-            justify-content: center;
+            font-size: 1.2rem;
         }
-        .control-group {
-            background: #f5f5f5;
-            padding: 15px 20px;
-            border-radius: 8px;
+        .grid-container {
+            display: grid;
+            grid-template-columns: auto 1fr 1fr;
+            grid-template-rows: auto 1fr 1fr;
+            gap: 2px;
+            max-width: 600px;
+            margin: 0 auto;
+            background: #e0e0e0;
         }
-        .control-group h3 {
-            color: #2C6496;
-            font-size: 0.9rem;
-            margin-bottom: 10px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        .toggle-buttons {
-            display: flex;
-            gap: 8px;
-        }
-        .toggle-btn {
-            padding: 8px 16px;
-            border: 2px solid #2C6496;
-            background: white;
-            color: #2C6496;
-            border-radius: 6px;
-            cursor: pointer;
-            font-family: 'Roboto', sans-serif;
-            font-size: 0.9rem;
-            transition: all 0.2s;
-        }
-        .toggle-btn:hover {
-            background: #e8f4fc;
-        }
-        .toggle-btn.active {
+        .header-cell {
             background: #2C6496;
             color: white;
-        }
-        #chart {
-            width: 100%;
-            height: 400px;
-        }
-        .summary {
+            padding: 15px 20px;
+            font-weight: 600;
             text-align: center;
-            margin-top: 15px;
-            padding: 15px;
-            background: #f8f9fa;
-            border-radius: 8px;
+            font-size: 0.95rem;
         }
-        .summary-value {
-            font-size: 1.5rem;
+        .row-header {
+            background: #3a7ab8;
+            color: white;
+            padding: 20px 15px;
+            font-weight: 500;
+            text-align: center;
+            writing-mode: vertical-rl;
+            transform: rotate(180deg);
+            font-size: 0.9rem;
+        }
+        .corner {
+            background: #1a4a6e;
+        }
+        .data-cell {
+            background: white;
+            padding: 30px 20px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        .revenue-value {
+            font-size: 2rem;
             font-weight: 700;
             color: #2C6496;
+            margin-bottom: 5px;
         }
-        .summary-label {
+        .revenue-label {
+            font-size: 0.85rem;
             color: #666;
+        }
+        .note {
+            text-align: center;
+            margin-top: 20px;
+            color: #666;
+            font-size: 0.85rem;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .axis-label {
+            text-align: center;
+            margin: 15px 0 10px;
+            font-weight: 600;
+            color: #333;
             font-size: 0.9rem;
         }
     </style>
 </head>
 <body>
-    <div class="controls">
-        <div class="control-group">
-            <h3>Employer Response</h3>
-            <div class="toggle-buttons">
-                <button class="toggle-btn active" data-employer="spread" onclick="setEmployer('spread')">Spread Cost</button>
-                <button class="toggle-btn" data-employer="absorb" onclick="setEmployer('absorb')">Absorb Cost</button>
-            </div>
+    <h2>PolicyEngine Revenue Estimates (2029-30)</h2>
+
+    <div class="axis-label">Employee Response</div>
+
+    <div class="grid-container">
+        <div class="header-cell corner"></div>
+        <div class="header-cell">Maintain Pension</div>
+        <div class="header-cell">Take Cash</div>
+
+        <div class="row-header">Spread Cost</div>
+        <div class="data-cell">
+            <div class="revenue-value">£1.20bn</div>
+            <div class="revenue-label">per year</div>
         </div>
-        <div class="control-group">
-            <h3>Employee Response</h3>
-            <div class="toggle-buttons">
-                <button class="toggle-btn active" data-employee="maintain" onclick="setEmployee('maintain')">Maintain Pension</button>
-                <button class="toggle-btn" data-employee="cash" onclick="setEmployee('cash')">Take Cash</button>
-            </div>
+        <div class="data-cell">
+            <div class="revenue-value">£2.15bn</div>
+            <div class="revenue-label">per year</div>
+        </div>
+
+        <div class="row-header">Absorb Cost</div>
+        <div class="data-cell">
+            <div class="revenue-value">£1.48bn</div>
+            <div class="revenue-label">per year</div>
+        </div>
+        <div class="data-cell">
+            <div class="revenue-value">£2.43bn</div>
+            <div class="revenue-label">per year</div>
         </div>
     </div>
 
-    <div id="chart"></div>
-
-    <div class="summary">
-        <div class="summary-value" id="total-revenue">-</div>
-        <div class="summary-label">Total Revenue 2029-30 to 2032-33 (billions)</div>
+    <div style="text-align: center; margin-top: 10px; color: #666; font-size: 0.8rem;">
+        Employer Response ↑
     </div>
 
-    <script>
-        // Revenue data from PolicyEngine microsimulation
-        // Revenue in billions GBP by scenario
-        // Policy effective from April 2029 per OBR November 2025 Economic and Fiscal Outlook
-        const revenueData = {
-            spread_maintain: {
-                years: ['2029-30', '2030-31', '2031-32', '2032-33'],
-                revenue: [1.20, 1.24, 1.28, 1.32],
-                label: "Spread Cost + Maintain Pension"
-            },
-            spread_cash: {
-                years: ['2029-30', '2030-31', '2031-32', '2032-33'],
-                revenue: [2.15, 2.22, 2.29, 2.36],
-                label: "Spread Cost + Take Cash"
-            },
-            absorb_maintain: {
-                years: ['2029-30', '2030-31', '2031-32', '2032-33'],
-                revenue: [1.48, 1.53, 1.58, 1.63],
-                label: "Absorb Cost + Maintain Pension"
-            },
-            absorb_cash: {
-                years: ['2029-30', '2030-31', '2031-32', '2032-33'],
-                revenue: [2.43, 2.51, 2.59, 2.67],
-                label: "Absorb Cost + Take Cash"
-            }
-        };
-
-        let currentEmployer = 'spread';
-        let currentEmployee = 'maintain';
-
-        function getScenarioKey() {
-            return `${currentEmployer}_${currentEmployee}`;
-        }
-
-        function setEmployer(employer) {
-            currentEmployer = employer;
-            document.querySelectorAll('[data-employer]').forEach(btn => {
-                btn.classList.toggle('active', btn.dataset.employer === employer);
-            });
-            updateChart();
-        }
-
-        function setEmployee(employee) {
-            currentEmployee = employee;
-            document.querySelectorAll('[data-employee]').forEach(btn => {
-                btn.classList.toggle('active', btn.dataset.employee === employee);
-            });
-            updateChart();
-        }
-
-        function updateChart() {
-            const key = getScenarioKey();
-            const data = revenueData[key];
-
-            const trace = {
-                x: data.years,
-                y: data.revenue,
-                type: 'bar',
-                marker: {
-                    color: '#2C6496'
-                },
-                text: data.revenue.map(v => `£${v.toFixed(2)}bn`),
-                textposition: 'outside',
-                hovertemplate: '<b>%{x}</b><br>Revenue: £%{y:.2f}bn<extra></extra>'
-            };
-
-            const layout = {
-                title: {
-                    text: data.label,
-                    font: { family: 'Roboto', size: 16, color: '#333' }
-                },
-                xaxis: {
-                    title: 'Fiscal Year',
-                    tickmode: 'array',
-                    tickvals: data.years,
-                    ticktext: data.years
-                },
-                yaxis: {
-                    title: 'Revenue (£bn)',
-                    range: [0, 3.1]  // Fixed range to accommodate all scenarios (max ~2.38bn)
-                },
-                margin: { t: 50, r: 30, b: 50, l: 60 },
-                font: { family: 'Roboto' }
-            };
-
-            const config = {
-                responsive: true,
-                displayModeBar: false
-            };
-
-            Plotly.react('chart', [trace], layout, config);
-
-            // Update summary
-            const total = data.revenue.reduce((a, b) => a + b, 0);
-            document.getElementById('total-revenue').textContent = `£${total.toFixed(2)}bn`;
-        }
-
-        // Initial render
-        updateChart();
-    </script>
+    <p class="note">
+        Revenue varies by behavioural assumptions. "Maintain Pension" assumes employees redirect excess contributions to regular pension schemes (keeping NI relief loss only). "Take Cash" assumes employees take excess as taxable income. "Spread Cost" assumes employers pass NI costs across all workers; "Absorb Cost" assumes employers bear the cost.
+    </p>
 </body>
 </html>
