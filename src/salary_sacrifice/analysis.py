@@ -26,6 +26,7 @@ def run_scenario(
         Dictionary with revenue and distributional results.
     """
     from policyengine_uk import Microsimulation
+    from policyengine_uk.utils.scenario import Scenario
 
     if years is None:
         years = [2026, 2027, 2028, 2029]
@@ -40,7 +41,8 @@ def run_scenario(
     baseline = Microsimulation(**kwargs)
 
     reform_modifier = create_salary_sacrifice_cap_reform(scenario, years=years)
-    reformed = Microsimulation(simulation_modifier=reform_modifier, **kwargs)
+    pe_scenario = Scenario(simulation_modifier=reform_modifier)
+    reformed = Microsimulation(scenario=pe_scenario, **kwargs)
 
     results = {
         "scenario": scenario.name,
@@ -148,6 +150,7 @@ def calculate_distributional_impact(
         DataFrame with impact by income decile
     """
     from policyengine_uk import Microsimulation
+    from policyengine_uk.utils.scenario import Scenario
 
     kwargs = {}
     if dataset_path:
@@ -157,29 +160,29 @@ def calculate_distributional_impact(
 
     baseline = Microsimulation(**kwargs)
     reform_modifier = create_salary_sacrifice_cap_reform(scenario, years=[year])
-    reformed = Microsimulation(simulation_modifier=reform_modifier, **kwargs)
+    pe_scenario = Scenario(simulation_modifier=reform_modifier)
+    reformed = Microsimulation(scenario=pe_scenario, **kwargs)
 
-    # Get data
-    baseline_income = baseline.calculate("household_net_income", period=year).values
-    reformed_income = reformed.calculate("household_net_income", period=year).values
-    deciles = baseline.calculate("income_decile", period=year).values
-    weights = baseline.calculate("person_weight", period=year).values
-
-    # Filter valid deciles (1-10)
-    valid = (deciles >= 1) & (deciles <= 10)
+    # Get data at household level - use PolicyEngine series with built-in weights
+    baseline_income = baseline.calculate("household_net_income", period=year)
+    reformed_income = reformed.calculate("household_net_income", period=year)
+    deciles = baseline.calculate("household_income_decile", period=year)
+    weights = baseline.calculate("household_weight", period=year)
 
     results = []
     for decile in range(1, 11):
-        mask = valid & (deciles == decile)
-        if mask.sum() == 0:
-            continue
+        mask = deciles == decile
 
-        weighted_baseline = (baseline_income[mask] * weights[mask]).sum()
-        weighted_reformed = (reformed_income[mask] * weights[mask]).sum()
+        # Use .sum() which respects weights in PolicyEngine series
+        baseline_sum = baseline_income[mask].sum()
+        reformed_sum = reformed_income[mask].sum()
         total_weight = weights[mask].sum()
 
-        avg_baseline = weighted_baseline / total_weight
-        avg_reformed = weighted_reformed / total_weight
+        if total_weight == 0:
+            continue
+
+        avg_baseline = baseline_sum / total_weight
+        avg_reformed = reformed_sum / total_weight
         avg_change = avg_reformed - avg_baseline
         pct_change = 100 * avg_change / avg_baseline if avg_baseline != 0 else 0
 

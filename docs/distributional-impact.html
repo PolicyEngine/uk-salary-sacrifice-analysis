@@ -86,41 +86,52 @@
                 <button class="toggle-btn" data-employee="cash" onclick="setEmployee('cash')">Take Cash</button>
             </div>
         </div>
+        <div class="control-group">
+            <h3>Display</h3>
+            <div class="toggle-buttons">
+                <button class="toggle-btn active" data-display="relative" onclick="setDisplay('relative')">Relative (%)</button>
+                <button class="toggle-btn" data-display="absolute" onclick="setDisplay('absolute')">Absolute (£)</button>
+            </div>
+        </div>
     </div>
 
     <div id="chart"></div>
 
-    <p class="note">Decile 1 = lowest income, Decile 10 = highest income. Negative values indicate higher tax burden from the cap; positive values indicate slight gains from the broad cost-spreading.</p>
+    <p class="note">Decile 1 = lowest income, Decile 10 = highest income. Impact on disposable income (employment income minus taxes and pension contributions). Data for 2029-30.</p>
 
     <script>
-        // Distributional impact data by income decile (% change in employment income)
-        // Data from PolicyEngine microsimulation - negative = income loss from extra tax
-        // Shows progressive nature - higher deciles lose more from the cap
+        // Distributional impact data by income decile
+        // From PolicyEngine microsimulation with calibrated salary sacrifice data
         const distributionalData = {
             spread_maintain: {
                 deciles: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
-                pctChange: [0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, -0.03, -0.16],
+                pctChange: [-0.07, -0.06, -0.47, -0.13, -0.07, -0.07, -0.13, -0.08, -0.12, -0.65],
+                absChange: [-1, -2, -31, -10, -8, -9, -21, -13, -28, -200],
                 label: "Spread Cost + Maintain Pension"
             },
             spread_cash: {
                 deciles: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
-                pctChange: [0.01, 0.01, 0.01, 0.01, -0.02, 0.00, -0.01, -0.02, -0.10, -0.33],
+                pctChange: [0.09, 0.02, 3.74, 0.48, 0.24, 0.14, 0.50, 1.00, 0.55, 1.32],
+                absChange: [1, 0, 251, 36, 26, 17, 78, 167, 128, 410],
                 label: "Spread Cost + Take Cash"
             },
             absorb_maintain: {
                 deciles: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
-                pctChange: [0.00, 0.00, 0.00, 0.00, -0.01, 0.00, -0.01, -0.01, -0.05, -0.18],
+                pctChange: [-0.01, -0.01, -0.42, -0.08, -0.02, -0.02, -0.08, -0.03, -0.07, -0.59],
+                absChange: [0, 0, -28, -6, -2, -3, -13, -5, -17, -182],
                 label: "Absorb Cost + Maintain Pension"
             },
             absorb_cash: {
                 deciles: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
-                pctChange: [0.00, 0.00, 0.00, 0.00, -0.04, -0.01, -0.03, -0.03, -0.12, -0.34],
+                pctChange: [0.15, 0.07, 3.79, 0.53, 0.29, 0.19, 0.55, 1.05, 0.60, 1.39],
+                absChange: [2, 2, 254, 39, 31, 23, 86, 175, 139, 429],
                 label: "Absorb Cost + Take Cash"
             }
         };
 
         let currentEmployer = 'spread';
         let currentEmployee = 'maintain';
+        let currentDisplay = 'relative';
 
         function getScenarioKey() {
             return `${currentEmployer}_${currentEmployee}`;
@@ -142,29 +153,56 @@
             updateChart();
         }
 
+        function setDisplay(display) {
+            currentDisplay = display;
+            document.querySelectorAll('[data-display]').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.display === display);
+            });
+            updateChart();
+        }
+
         function updateChart() {
             const key = getScenarioKey();
             const data = distributionalData[key];
 
+            const isRelative = currentDisplay === 'relative';
+            const values = isRelative ? data.pctChange : data.absChange;
+
             // Color bars by value (red for losses, green for gains)
-            const colors = data.pctChange.map(v =>
-                v < -0.1 ? '#c0392b' :  // Dark red for significant losses
+            const colors = values.map(v =>
+                v < -0.5 ? '#c0392b' :  // Dark red for significant losses
                 v < 0 ? '#e74c3c' :      // Red for small losses
-                v > 0.005 ? '#27ae60' :  // Green for gains
+                v > 0.5 ? '#27ae60' :    // Green for significant gains
+                v > 0 ? '#2ecc71' :      // Light green for small gains
                 '#f39c12'                 // Orange for neutral
             );
 
             const trace = {
                 x: data.deciles.map(d => `Decile ${d}`),
-                y: data.pctChange,
+                y: values,
                 type: 'bar',
                 marker: {
                     color: colors
                 },
-                text: data.pctChange.map(v => `${v.toFixed(2)}%`),
+                text: values.map(v => isRelative ? `${v.toFixed(2)}%` : `£${v.toFixed(0)}`),
                 textposition: 'outside',
-                hovertemplate: '<b>%{x}</b><br>Change: %{y:.2f}%<extra></extra>'
+                hovertemplate: isRelative
+                    ? '<b>%{x}</b><br>Change: %{y:.2f}%<extra></extra>'
+                    : '<b>%{x}</b><br>Change: £%{y:.0f}<extra></extra>'
             };
+
+            // Calculate y-axis range based on all scenarios for this display type
+            let minVal = 0, maxVal = 0;
+            Object.values(distributionalData).forEach(d => {
+                const vals = isRelative ? d.pctChange : d.absChange;
+                minVal = Math.min(minVal, ...vals);
+                maxVal = Math.max(maxVal, ...vals);
+            });
+
+            // Add padding
+            const padding = (maxVal - minVal) * 0.15;
+            const yMin = Math.min(minVal - padding, 0);
+            const yMax = Math.max(maxVal + padding, 0);
 
             const layout = {
                 title: {
@@ -175,8 +213,8 @@
                     title: 'Income Decile'
                 },
                 yaxis: {
-                    title: '% Change in Employment Income',
-                    range: [-0.45, 0.05],  // Fixed range to accommodate all scenarios (min -0.34%, max 0.01%)
+                    title: isRelative ? '% Change in Disposable Income' : '£ Change in Disposable Income',
+                    range: [yMin, yMax],
                     zeroline: true,
                     zerolinewidth: 2,
                     zerolinecolor: '#333'
