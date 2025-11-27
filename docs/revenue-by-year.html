@@ -102,31 +102,32 @@
 
     <div class="summary">
         <div class="summary-value" id="total-revenue">-</div>
-        <div class="summary-label">Total Revenue 2026-2029 (billions)</div>
+        <div class="summary-label">Total Revenue 2029-30 to 2032-33 (billions)</div>
     </div>
 
     <script>
         // Revenue data from PolicyEngine microsimulation
         // Revenue in billions GBP by scenario
+        // Policy effective from April 2029 per OBR November 2025 Economic and Fiscal Outlook
         const revenueData = {
             spread_maintain: {
-                years: [2026, 2027, 2028, 2029],
-                revenue: [1.12, 1.12, 1.16, 1.20],
+                years: ['2029-30', '2030-31', '2031-32', '2032-33'],
+                revenue: [1.20, 1.24, 1.28, 1.32],
                 label: "Spread Cost + Maintain Pension"
             },
             spread_cash: {
-                years: [2026, 2027, 2028, 2029],
-                revenue: [2.02, 2.03, 2.06, 2.10],
+                years: ['2029-30', '2030-31', '2031-32', '2032-33'],
+                revenue: [2.15, 2.22, 2.29, 2.36],
                 label: "Spread Cost + Take Cash"
             },
             absorb_maintain: {
-                years: [2026, 2027, 2028, 2029],
-                revenue: [1.39, 1.40, 1.43, 1.48],
+                years: ['2029-30', '2030-31', '2031-32', '2032-33'],
+                revenue: [1.48, 1.53, 1.58, 1.63],
                 label: "Absorb Cost + Maintain Pension"
             },
             absorb_cash: {
-                years: [2026, 2027, 2028, 2029],
-                revenue: [2.29, 2.30, 2.34, 2.38],
+                years: ['2029-30', '2030-31', '2031-32', '2032-33'],
+                revenue: [2.43, 2.51, 2.59, 2.67],
                 label: "Absorb Cost + Take Cash"
             }
         };
@@ -176,10 +177,10 @@
                     font: { family: 'Roboto', size: 16, color: '#333' }
                 },
                 xaxis: {
-                    title: 'Year',
+                    title: 'Fiscal Year',
                     tickmode: 'array',
                     tickvals: data.years,
-                    ticktext: data.years.map(String)
+                    ticktext: data.years
                 },
                 yaxis: {
                     title: 'Revenue (£bn)',
