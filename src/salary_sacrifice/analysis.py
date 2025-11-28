@@ -141,6 +141,9 @@ def calculate_distributional_impact(
 ) -> pd.DataFrame:
     """Calculate distributional impact by income decile.
 
+    Uses income including pension contributions (net income + pension contributions)
+    so that shifting from pension to cash doesn't appear as a gain.
+
     Args:
         scenario: Scenario configuration
         year: Year to analyze
@@ -163,26 +166,48 @@ def calculate_distributional_impact(
     pe_scenario = Scenario(simulation_modifier=reform_modifier)
     reformed = Microsimulation(scenario=pe_scenario, **kwargs)
 
-    # Get data at household level - use PolicyEngine series with built-in weights
-    baseline_income = baseline.calculate("household_net_income", period=year)
-    reformed_income = reformed.calculate("household_net_income", period=year)
-    deciles = baseline.calculate("household_income_decile", period=year)
-    weights = baseline.calculate("household_weight", period=year)
+    # Measure impact using change in household net income minus pension contributions
+    # Net income = market income + benefits - taxes
+    # We subtract pension contributions to get "consumption income" -
+    # this ensures switching from pension to cash doesn't appear as a gain
+    baseline_net = baseline.calculate("household_net_income", period=year).values
+    reformed_net = reformed.calculate("household_net_income", period=year).values
+
+    # Sum person-level pension contributions to household level
+    baseline_pensions = baseline.map_result(
+        baseline.calculate("pension_contributions", period=year).values,
+        "person",
+        "household",
+    )
+    reformed_pensions = reformed.map_result(
+        reformed.calculate("pension_contributions", period=year).values,
+        "person",
+        "household",
+    )
+
+    # Consumption income = net income - pension contributions
+    baseline_income = baseline_net - baseline_pensions
+    reformed_income = reformed_net - reformed_pensions
+
+    deciles = baseline.calculate("household_income_decile", period=year).values
+    weights = baseline.calculate("household_weight", period=year).values
 
     results = []
     for decile in range(1, 11):
         mask = deciles == decile
 
-        # Use .sum() which respects weights in PolicyEngine series
-        baseline_sum = baseline_income[mask].sum()
-        reformed_sum = reformed_income[mask].sum()
-        total_weight = weights[mask].sum()
+        # Manual weighted calculation using numpy arrays
+        w = weights[mask]
+        total_weight = w.sum()
 
         if total_weight == 0:
             continue
 
-        avg_baseline = baseline_sum / total_weight
-        avg_reformed = reformed_sum / total_weight
+        baseline_weighted = (baseline_income[mask] * w).sum()
+        reformed_weighted = (reformed_income[mask] * w).sum()
+
+        avg_baseline = baseline_weighted / total_weight
+        avg_reformed = reformed_weighted / total_weight
         avg_change = avg_reformed - avg_baseline
         pct_change = 100 * avg_change / avg_baseline if avg_baseline != 0 else 0
 

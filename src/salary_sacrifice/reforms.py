@@ -25,6 +25,42 @@ from enum import Enum
 from typing import Callable
 
 import numpy as np
+from policyengine_core.model_api import Reform
+from policyengine_uk.variables.household.income.household_net_income import (
+    household_net_income as original_household_net_income,
+)
+
+
+def apply_income_including_pensions(sim) -> None:
+    """Apply a structural change that includes pension contributions in net income.
+
+    This modifies household_net_income to add pension contributions, ensuring
+    that switching from pension contributions to cash doesn't artificially
+    appear as an income gain in distributional analysis.
+
+    Should be called on both baseline and reform simulations.
+
+    Args:
+        sim: PolicyEngine Microsimulation object
+    """
+    from policyengine_core.periods import YEAR
+    from policyengine_core.variables import Variable
+
+    # Create the household-level pension variable
+    class household_pension_contributions(Variable):
+        value_type = float
+        entity = sim.tax_benefit_system.entities_by_singular()["household"]
+        definition_period = YEAR
+        label = "Total pension contributions for the household"
+        adds = ["pension_contributions"]
+
+    # Add the new variable to the tax benefit system
+    sim.tax_benefit_system.add_variable(household_pension_contributions)
+
+    # Modify household_net_income to include pensions
+    original_var = sim.tax_benefit_system.variables["household_net_income"]
+    if "household_pension_contributions" not in original_var.adds:
+        original_var.adds = original_var.adds + ["household_pension_contributions"]
 
 
 class EmployerResponse(Enum):

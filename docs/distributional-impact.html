@@ -102,29 +102,30 @@
     <script>
         // Distributional impact data by income decile
         // From PolicyEngine microsimulation with calibrated salary sacrifice data
+        // Uses "consumption income" = net income - pension contributions
         const distributionalData = {
             spread_maintain: {
                 deciles: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
-                pctChange: [-0.07, -0.06, -0.47, -0.13, -0.07, -0.07, -0.13, -0.08, -0.12, -0.65],
-                absChange: [-1, -2, -31, -10, -8, -9, -21, -13, -28, -200],
+                pctChange: [-0.01, -0.01, -0.22, -0.04, -0.04, -0.04, -0.10, -0.08, -0.09, -0.37],
+                absChange: [-2, -4, -63, -14, -16, -17, -50, -40, -60, -431],
                 label: "Spread Cost + Maintain Pension"
             },
             spread_cash: {
                 deciles: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
-                pctChange: [0.09, 0.02, 3.74, 0.48, 0.24, 0.14, 0.50, 1.00, 0.55, 1.32],
-                absChange: [1, 0, 251, 36, 26, 17, 78, 167, 128, 410],
+                pctChange: [0.05, 0.01, 1.74, 0.13, 0.13, 0.06, 0.58, 0.54, 0.36, 0.77],
+                absChange: [9, 2, 511, 41, 48, 27, 295, 280, 252, 892],
                 label: "Spread Cost + Take Cash"
             },
             absorb_maintain: {
                 deciles: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
-                pctChange: [-0.01, -0.01, -0.42, -0.08, -0.02, -0.02, -0.08, -0.03, -0.07, -0.59],
-                absChange: [0, 0, -28, -6, -2, -3, -13, -5, -17, -182],
+                pctChange: [-0.01, -0.00, -0.20, -0.02, -0.01, -0.01, -0.06, -0.04, -0.05, -0.34],
+                absChange: [-1, -1, -57, -7, -5, -5, -33, -21, -34, -391],
                 label: "Absorb Cost + Maintain Pension"
             },
             absorb_cash: {
                 deciles: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
-                pctChange: [0.15, 0.07, 3.79, 0.53, 0.29, 0.19, 0.55, 1.05, 0.60, 1.39],
-                absChange: [2, 2, 254, 39, 31, 23, 86, 175, 139, 429],
+                pctChange: [0.06, 0.02, 1.76, 0.15, 0.16, 0.09, 0.61, 0.58, 0.40, 0.80],
+                absChange: [10, 5, 517, 48, 59, 40, 312, 299, 278, 933],
                 label: "Absorb Cost + Take Cash"
             }
         };
