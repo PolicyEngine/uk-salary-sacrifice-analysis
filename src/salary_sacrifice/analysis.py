@@ -166,28 +166,29 @@ def calculate_distributional_impact(
     pe_scenario = Scenario(simulation_modifier=reform_modifier)
     reformed = Microsimulation(scenario=pe_scenario, **kwargs)
 
-    # Measure impact using change in household net income minus pension contributions
-    # Net income = market income + benefits - taxes
-    # We subtract pension contributions to get "consumption income" -
-    # this ensures switching from pension to cash doesn't appear as a gain
+    # Measure impact using "total income" = net income + salary sacrifice pension
+    # Salary sacrifice is tax-free pension that doesn't come out of net income,
+    # so we add it to get total household resources. Employee pension contributions
+    # already reduce net income so don't need to be added.
+    # This ensures that capping salary sacrifice shows as a LOSS (less tax-free pension).
     baseline_net = baseline.calculate("household_net_income", period=year).values
     reformed_net = reformed.calculate("household_net_income", period=year).values
 
-    # Sum person-level pension contributions to household level
-    baseline_pensions = baseline.map_result(
-        baseline.calculate("pension_contributions", period=year).values,
+    # Sum person-level salary sacrifice to household level
+    baseline_ss = baseline.map_result(
+        baseline.calculate("pension_contributions_via_salary_sacrifice", period=year).values,
         "person",
         "household",
     )
-    reformed_pensions = reformed.map_result(
-        reformed.calculate("pension_contributions", period=year).values,
+    reformed_ss = reformed.map_result(
+        reformed.calculate("pension_contributions_via_salary_sacrifice", period=year).values,
         "person",
         "household",
     )
 
-    # Consumption income = net income - pension contributions
-    baseline_income = baseline_net - baseline_pensions
-    reformed_income = reformed_net - reformed_pensions
+    # Total income = net income + salary sacrifice (tax-free pension benefit)
+    baseline_income = baseline_net + baseline_ss
+    reformed_income = reformed_net + reformed_ss
 
     deciles = baseline.calculate("household_income_decile", period=year).values
     weights = baseline.calculate("household_weight", period=year).values

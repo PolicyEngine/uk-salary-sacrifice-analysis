@@ -97,35 +97,35 @@
 
     <div id="chart"></div>
 
-    <p class="note">Decile 1 = lowest income, Decile 10 = highest income. Impact on disposable income (employment income minus taxes and pension contributions). Data for 2029-30.</p>
+    <p class="note">Decile 1 = lowest income, Decile 10 = highest income. Impact on total income (net income + salary sacrifice pension). Data for 2029-30.</p>
 
     <script>
         // Distributional impact data by income decile
         // From PolicyEngine microsimulation with calibrated salary sacrifice data
-        // Uses "consumption income" = net income - pension contributions
+        // Uses "total income" = net income + salary sacrifice pension contributions
         const distributionalData = {
             spread_maintain: {
                 deciles: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
-                pctChange: [-0.01, -0.01, -0.22, -0.04, -0.04, -0.04, -0.10, -0.08, -0.09, -0.37],
+                pctChange: [-0.01, -0.01, -0.21, -0.04, -0.04, -0.04, -0.09, -0.07, -0.08, -0.35],
                 absChange: [-2, -4, -63, -14, -16, -17, -50, -40, -60, -431],
                 label: "Spread Cost + Maintain Pension"
             },
             spread_cash: {
                 deciles: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
-                pctChange: [0.05, 0.01, 1.74, 0.13, 0.13, 0.06, 0.58, 0.54, 0.36, 0.77],
-                absChange: [9, 2, 511, 41, 48, 27, 295, 280, 252, 892],
+                pctChange: [-0.03, -0.02, -0.72, -0.09, -0.11, -0.07, -0.35, -0.28, -0.30, -0.79],
+                absChange: [-5, -5, -222, -29, -43, -33, -187, -156, -219, -983],
                 label: "Spread Cost + Take Cash"
             },
             absorb_maintain: {
                 deciles: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
-                pctChange: [-0.01, -0.00, -0.20, -0.02, -0.01, -0.01, -0.06, -0.04, -0.05, -0.34],
+                pctChange: [-0.01, -0.00, -0.19, -0.02, -0.01, -0.01, -0.06, -0.04, -0.05, -0.32],
                 absChange: [-1, -1, -57, -7, -5, -5, -33, -21, -34, -391],
                 label: "Absorb Cost + Maintain Pension"
             },
             absorb_cash: {
                 deciles: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
-                pctChange: [0.06, 0.02, 1.76, 0.15, 0.16, 0.09, 0.61, 0.58, 0.40, 0.80],
-                absChange: [10, 5, 517, 48, 59, 40, 312, 299, 278, 933],
+                pctChange: [-0.02, -0.01, -0.70, -0.07, -0.08, -0.05, -0.32, -0.25, -0.26, -0.76],
+                absChange: [-3, -2, -216, -23, -32, -20, -170, -137, -193, -942],
                 label: "Absorb Cost + Take Cash"
             }
         };
@@ -193,19 +193,16 @@
             };
 
             // Calculate y-axis range based on all scenarios for this display type
-            // Make symmetric around zero
-            let minVal = 0, maxVal = 0;
+            // All values are negative, so put y=0 at top
+            let minVal = 0;
             Object.values(distributionalData).forEach(d => {
                 const vals = isRelative ? d.pctChange : d.absChange;
                 minVal = Math.min(minVal, ...vals);
-                maxVal = Math.max(maxVal, ...vals);
             });
 
-            // Make symmetric around zero
-            const absMax = Math.max(Math.abs(minVal), Math.abs(maxVal));
-            const padding = absMax * 0.15;
-            const yMin = -(absMax + padding);
-            const yMax = absMax + padding;
+            const padding = Math.abs(minVal) * 0.15;
+            const yMin = minVal - padding;
+            const yMax = padding;  // Small positive padding above zero
 
             const layout = {
                 title: {
@@ -216,7 +213,7 @@
                     title: 'Income Decile'
                 },
                 yaxis: {
-                    title: isRelative ? '% Change in Disposable Income' : '£ Change in Disposable Income',
+                    title: isRelative ? '% Change in Total Income' : '£ Change in Total Income',
                     range: [yMin, yMax],
                     zeroline: true,
                     zerolinewidth: 2,
