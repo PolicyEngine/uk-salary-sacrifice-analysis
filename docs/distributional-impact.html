@@ -171,13 +171,11 @@
             const isRelative = currentDisplay === 'relative';
             const values = isRelative ? data.pctChange : data.absChange;
 
-            // Color bars by value (red for losses, green for gains)
+            // Color bars by value (gray for losses, teal for gains - matches app-v2)
             const colors = values.map(v =>
-                v < -0.5 ? '#c0392b' :  // Dark red for significant losses
-                v < 0 ? '#e74c3c' :      // Red for small losses
-                v > 0.5 ? '#27ae60' :    // Green for significant gains
-                v > 0 ? '#2ecc71' :      // Light green for small gains
-                '#f39c12'                 // Orange for neutral
+                v < 0 ? '#4B5563' :      // Gray/600 for losses
+                v > 0 ? '#319795' :      // Primary/500 teal for gains
+                '#9CA3AF'                 // Gray/400 for zero
             );
 
             const trace = {
