@@ -192,6 +192,7 @@
             };
 
             // Calculate y-axis range based on all scenarios for this display type
+            // Make symmetric around zero
             let minVal = 0, maxVal = 0;
             Object.values(distributionalData).forEach(d => {
                 const vals = isRelative ? d.pctChange : d.absChange;
@@ -199,10 +200,11 @@
                 maxVal = Math.max(maxVal, ...vals);
             });
 
-            // Add padding
-            const padding = (maxVal - minVal) * 0.15;
-            const yMin = Math.min(minVal - padding, 0);
-            const yMax = Math.max(maxVal + padding, 0);
+            // Make symmetric around zero
+            const absMax = Math.max(Math.abs(minVal), Math.abs(maxVal));
+            const padding = absMax * 0.15;
+            const yMin = -(absMax + padding);
+            const yMax = absMax + padding;
 
             const layout = {
                 title: {
