@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Distributional Impact - UK Salary Sacrifice Cap</title>
     <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         * {
             box-sizing: border-box;
@@ -13,7 +13,7 @@
             padding: 0;
         }
         body {
-            font-family: 'Roboto', sans-serif;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             background: white;
             padding: 20px;
         }
@@ -25,16 +25,17 @@
             justify-content: center;
         }
         .control-group {
-            background: #f5f5f5;
+            background: #F9FAFB;
             padding: 10px 12px;
             border-radius: 8px;
         }
         .control-group h3 {
-            color: #2C6496;
+            color: #2C7A7B;
             font-size: 0.75rem;
             margin-bottom: 8px;
             text-transform: uppercase;
             letter-spacing: 0.5px;
+            font-weight: 600;
         }
         .toggle-buttons {
             display: flex;
@@ -42,20 +43,21 @@
         }
         .toggle-btn {
             padding: 6px 10px;
-            border: 2px solid #2C6496;
+            border: 2px solid #319795;
             background: white;
-            color: #2C6496;
+            color: #319795;
             border-radius: 6px;
             cursor: pointer;
-            font-family: 'Roboto', sans-serif;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             font-size: 0.8rem;
+            font-weight: 500;
             transition: all 0.2s;
         }
         .toggle-btn:hover {
-            background: #e8f4fc;
+            background: #E6FFFA;
         }
         .toggle-btn.active {
-            background: #2C6496;
+            background: #319795;
             color: white;
         }
         #chart {
@@ -207,7 +209,7 @@
             const layout = {
                 title: {
                     text: data.label,
-                    font: { family: 'Roboto', size: 16, color: '#333' }
+                    font: { family: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif', size: 16, color: '#1D4044' }
                 },
                 xaxis: {
                     title: 'Income Decile'
@@ -217,17 +219,17 @@
                     range: [yMin, yMax],
                     zeroline: true,
                     zerolinewidth: 2,
-                    zerolinecolor: '#333'
+                    zerolinecolor: '#1D4044'
                 },
                 margin: { t: 50, r: 30, b: 60, l: 70 },
-                font: { family: 'Roboto' },
+                font: { family: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif' },
                 shapes: [{
                     type: 'line',
                     x0: -0.5,
                     x1: 9.5,
                     y0: 0,
                     y1: 0,
-                    line: { color: '#333', width: 1 }
+                    line: { color: '#1D4044', width: 1 }
                 }]
             };
 
