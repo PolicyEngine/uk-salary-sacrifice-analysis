@@ -210,10 +210,13 @@
                     font: { family: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif', size: 16, color: '#1D4044' }
                 },
                 xaxis: {
-                    title: 'Income Decile'
+                    title: 'Income decile'
                 },
                 yaxis: {
-                    title: isRelative ? '% Change in Total Income' : '£ Change in Total Income',
+                    title: 'Change in total income',
+                    tickformat: isRelative ? '.2f' : ',.0f',
+                    ticksuffix: isRelative ? '%' : '',
+                    tickprefix: isRelative ? '' : '£',
                     range: [yMin, yMax],
                     zeroline: true,
                     zerolinewidth: 2,
