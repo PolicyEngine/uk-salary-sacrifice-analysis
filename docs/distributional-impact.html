@@ -177,11 +177,22 @@
                 marker: {
                     color: colors
                 },
-                text: values.map(v => isRelative ? `${v.toFixed(2)}%` : `£${v.toFixed(0)}`),
+                text: values.map(v => {
+                    if (isRelative) {
+                        return `${v.toFixed(1)}%`;
+                    } else {
+                        // Format as -£400 instead of £-400
+                        if (v < 0) {
+                            return '-£' + Math.abs(v).toFixed(0);
+                        } else {
+                            return '£' + v.toFixed(0);
+                        }
+                    }
+                }),
                 textposition: 'outside',
                 hovertemplate: isRelative
-                    ? '<b>%{x}</b><br>Change: %{y:.2f}%<extra></extra>'
-                    : '<b>%{x}</b><br>Change: £%{y:.0f}<extra></extra>'
+                    ? '<b>%{x}</b><br>Change: %{y:.1f}%<extra></extra>'
+                    : '<b>%{x}</b><br>Change: %{text}<extra></extra>'
             };
 
             // Calculate y-axis range based on all scenarios for this display type
@@ -206,13 +217,36 @@
                 },
                 yaxis: {
                     title: 'Change in total income',
-                    tickformat: isRelative ? '.2f' : ',.0f',
-                    ticksuffix: isRelative ? '%' : '',
-                    tickprefix: isRelative ? '' : '£',
                     range: [yMin, yMax],
                     zeroline: true,
                     zerolinewidth: 2,
-                    zerolinecolor: '#1D4044'
+                    zerolinecolor: '#1D4044',
+                    tickformat: isRelative ? '.1f' : '',
+                    ticksuffix: isRelative ? '%' : '',
+                    // For absolute values, use hoverformat and let ticktext handle display
+                    tickmode: isRelative ? 'auto' : 'array',
+                    tickvals: isRelative ? undefined : (function() {
+                        const step = 200;
+                        const ticks = [];
+                        for (let v = Math.floor(yMin / step) * step; v <= yMax; v += step) {
+                            ticks.push(v);
+                        }
+                        return ticks;
+                    })(),
+                    ticktext: isRelative ? undefined : (function() {
+                        const step = 200;
+                        const texts = [];
+                        for (let v = Math.floor(yMin / step) * step; v <= yMax; v += step) {
+                            if (v < 0) {
+                                texts.push('-£' + Math.abs(v).toLocaleString());
+                            } else if (v > 0) {
+                                texts.push('£' + v.toLocaleString());
+                            } else {
+                                texts.push('£0');
+                            }
+                        }
+                        return texts;
+                    })()
                 },
                 margin: { t: 50, r: 30, b: 60, l: 70 },
                 font: { family: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif' },
