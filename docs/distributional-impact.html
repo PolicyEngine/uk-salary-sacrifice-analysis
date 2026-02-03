@@ -69,14 +69,14 @@
 <body>
     <div class="controls">
         <div class="control-group">
-            <h3>Employer Response</h3>
+            <h3>Employer response</h3>
             <div class="toggle-buttons">
                 <button class="toggle-btn active" data-employer="spread" onclick="setEmployer('spread')">Spread cost</button>
                 <button class="toggle-btn" data-employer="absorb" onclick="setEmployer('absorb')">Absorb cost</button>
             </div>
         </div>
         <div class="control-group">
-            <h3>Employee Response</h3>
+            <h3>Employee response</h3>
             <div class="toggle-buttons">
                 <button class="toggle-btn active" data-employee="maintain" onclick="setEmployee('maintain')">Maintain pension</button>
                 <button class="toggle-btn" data-employee="cash" onclick="setEmployee('cash')">Take cash</button>
@@ -95,31 +95,31 @@
 
     <script>
         // Distributional impact data by income decile
-        // From PolicyEngine microsimulation with calibrated salary sacrifice data
+        // From PolicyEngine microsimulation with £5,000 salary sacrifice cap
         // Uses "total income" = net income + salary sacrifice pension contributions
         const distributionalData = {
             spread_maintain: {
                 deciles: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
-                pctChange: [-0.01, -0.01, -0.21, -0.04, -0.04, -0.04, -0.09, -0.07, -0.08, -0.35],
-                absChange: [-2, -4, -63, -14, -16, -17, -50, -40, -60, -431],
+                pctChange: [-0.02, -1.58, -0.06, -0.08, -0.62, -0.11, -0.13, -0.40, -0.40, -0.88],
+                absChange: [-4, -536, -24, -34, -313, -56, -76, -285, -329, -1278],
                 label: "Spread cost + Maintain pension (2029-30)"
             },
             spread_cash: {
                 deciles: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
-                pctChange: [-0.03, -0.02, -0.72, -0.09, -0.11, -0.07, -0.35, -0.28, -0.30, -0.79],
-                absChange: [-5, -5, -222, -29, -43, -33, -187, -156, -219, -983],
+                pctChange: [-0.01, -0.42, -0.02, -0.03, -0.17, -0.05, -0.05, -0.16, -0.20, -0.30],
+                absChange: [-2, -142, -9, -14, -87, -28, -29, -113, -163, -440],
                 label: "Spread cost + Take cash (2029-30)"
             },
             absorb_maintain: {
                 deciles: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
-                pctChange: [-0.01, -0.00, -0.19, -0.02, -0.01, -0.01, -0.06, -0.04, -0.05, -0.32],
-                absChange: [-1, -1, -57, -7, -5, -5, -33, -21, -34, -391],
+                pctChange: [-0.02, -1.57, -0.05, -0.07, -0.60, -0.09, -0.11, -0.38, -0.38, -0.87],
+                absChange: [-3, -532, -20, -28, -306, -47, -66, -272, -314, -1254],
                 label: "Absorb cost + Maintain pension (2029-30)"
             },
             absorb_cash: {
                 deciles: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
-                pctChange: [-0.02, -0.01, -0.70, -0.07, -0.08, -0.05, -0.32, -0.25, -0.26, -0.76],
-                absChange: [-3, -2, -216, -23, -32, -20, -170, -137, -193, -942],
+                pctChange: [-0.00, -0.41, -0.01, -0.02, -0.16, -0.04, -0.03, -0.14, -0.18, -0.29],
+                absChange: [-1, -138, -5, -8, -79, -20, -19, -100, -148, -415],
                 label: "Absorb cost + Take cash (2029-30)"
             }
         };
