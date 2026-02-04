@@ -5,6 +5,7 @@ from pathlib import Path
 import click
 
 from salary_sacrifice.generate_data import generate_data
+from salary_sacrifice.no_behavioral import generate_no_behavioral_data
 
 
 @click.group()
@@ -203,6 +204,7 @@ main.add_command(run_single, "single")
 main.add_command(distributional, "distributional")
 
 main.add_command(generate_data, "generate-data")
+main.add_command(generate_no_behavioral_data, "generate-no-behavioral")
 
 
 if __name__ == "__main__":

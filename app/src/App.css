@@ -15,21 +15,31 @@ body {
 .app-header {
   background: linear-gradient(135deg, #319795 0%, #285e61 100%);
   color: white;
-  padding: 32px 24px 24px;
+  padding: 14px 32px;
+  position: relative;
   text-align: center;
 }
 
+.header-text {
+  text-align: center;
+}
+
+.app-header .tab-selector {
+  position: absolute;
+  right: 32px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
 .app-header h1 {
-  font-size: 1.75rem;
+  font-size: 1.5rem;
   font-weight: 700;
-  margin-bottom: 6px;
+  margin-bottom: 2px;
 }
 
 .app-header p {
-  font-size: 0.95rem;
+  font-size: 0.85rem;
   opacity: 0.9;
-  max-width: 600px;
-  margin: 0 auto;
 }
 
 .app-container {
@@ -205,4 +215,74 @@ body {
 
 .app-footer a:hover {
   text-decoration: underline;
+}
+
+/* Tab selector styles */
+.tab-selector {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+}
+
+.tab-button {
+  padding: 8px 16px;
+  border: none;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.8);
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 500;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.tab-button:hover {
+  color: white;
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.tab-button.active {
+  background: white;
+  color: #319795;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+@media (max-width: 768px) {
+  .app-header {
+    padding-bottom: 56px;
+  }
+
+  .app-header .tab-selector {
+    position: absolute;
+    right: 50%;
+    top: auto;
+    bottom: 16px;
+    transform: translateX(50%);
+  }
+}
+
+/* Methodology note */
+.methodology-note {
+  background: #f0fdfa;
+  border: 1px solid #99f6e4;
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin-bottom: 24px;
+  font-size: 0.85rem;
+  color: #115e59;
+}
+
+.methodology-note strong {
+  color: #0d9488;
+}
+
+.error-state code {
+  background: #fee2e2;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.8rem;
 }
