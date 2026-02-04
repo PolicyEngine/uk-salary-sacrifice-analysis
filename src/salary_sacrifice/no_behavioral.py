@@ -239,7 +239,9 @@ def generate_no_behavioral_data(resume, output):
         if baseline_key not in progress["results"]:
             progress["results"][baseline_key] = {}
 
-        baseline_label = "no cap" if baseline_key == "none" else f"£{baseline_cap:,} cap"
+        baseline_label = (
+            "no cap" if baseline_key == "none" else f"£{baseline_cap:,} cap"
+        )
         click.echo(f"\n--- Baseline: {baseline_label} ---")
 
         for cap in CAP_LEVELS:
