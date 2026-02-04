@@ -11,7 +11,13 @@ import {
 import { COLORS, FONT_FAMILY } from "../config/constants";
 import { getScenarioData } from "../utils/dataTransformers";
 
-export default function AffectedShareChart({ data, cap, year, scenario }) {
+export default function AffectedShareChart({
+  data,
+  cap,
+  year,
+  scenario,
+  yDomain,
+}) {
   const scenarioData = getScenarioData(data, cap, year, scenario);
   const distributional = scenarioData?.distributional;
 
@@ -44,6 +50,7 @@ export default function AffectedShareChart({ data, cap, year, scenario }) {
           tick={{ fontFamily: FONT_FAMILY, fontSize: 12 }}
         />
         <YAxis
+          domain={yDomain}
           label={{
             value: "Share of households affected (%)",
             angle: -90,
@@ -57,7 +64,10 @@ export default function AffectedShareChart({ data, cap, year, scenario }) {
           tick={{ fontFamily: FONT_FAMILY, fontSize: 12 }}
         />
         <Tooltip
-          formatter={(value) => [`${parseFloat(value.toFixed(1))}%`, "Affected"]}
+          formatter={(value) => [
+            `${parseFloat(value.toFixed(1))}%`,
+            "Affected",
+          ]}
           contentStyle={{ fontFamily: FONT_FAMILY }}
         />
         <Bar dataKey="share" fill={COLORS.teal500}>

@@ -1,9 +1,15 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useSimulationData } from "./hooks/useSimulationData";
-import { SCENARIO_LABELS, YEAR_LABELS } from "./config/constants";
+import {
+  SCENARIO_LABELS,
+  YEAR_LABELS,
+  BASELINE_LABELS,
+} from "./config/constants";
+import { computeGlobalRanges } from "./utils/dataTransformers";
 import ScenarioSelector from "./components/ScenarioSelector";
 import YearToggle from "./components/YearToggle";
 import DisplayToggle from "./components/DisplayToggle";
+import BaselineToggle from "./components/BaselineToggle";
 import CapSelector from "./components/CapSelector";
 import RevenueByCapChart from "./components/RevenueByCapChart";
 import RevenueSummary from "./components/RevenueSummary";
@@ -19,6 +25,7 @@ function getInitialState() {
     employer: params.get("employer") || "spread",
     employee: params.get("employee") || "maintain",
     display: params.get("display") || "relative",
+    baseline: params.get("baseline") || "none",
   };
 }
 
@@ -29,6 +36,7 @@ function syncQueryParams(state) {
   params.set("employer", state.employer);
   params.set("employee", state.employee);
   params.set("display", state.display);
+  params.set("baseline", state.baseline);
   const newUrl =
     window.location.pathname + "?" + params.toString() + window.location.hash;
   window.history.replaceState(null, "", newUrl);
@@ -43,12 +51,18 @@ export default function App() {
   const [employer, setEmployer] = useState(initial.employer);
   const [employee, setEmployee] = useState(initial.employee);
   const [display, setDisplay] = useState(initial.display);
+  const [baseline, setBaseline] = useState(initial.baseline);
 
   const scenario = `${employer}_${employee === "cash" ? "cash" : "maintain"}`;
 
+  const ranges = useMemo(() => {
+    if (!data?.results) return null;
+    return computeGlobalRanges(data.results, baseline);
+  }, [data, baseline]);
+
   useEffect(() => {
-    syncQueryParams({ cap, year, employer, employee, display });
-  }, [cap, year, employer, employee, display]);
+    syncQueryParams({ cap, year, employer, employee, display, baseline });
+  }, [cap, year, employer, employee, display, baseline]);
 
   if (loading) {
     return (
@@ -66,6 +80,11 @@ export default function App() {
     );
   }
 
+  const baselineLabel =
+    baseline === "none" ? "no cap" : `${BASELINE_LABELS[baseline]}`;
+  const decileDomain =
+    display === "relative" ? ranges?.pct : ranges?.abs;
+
   return (
     <>
       <header className="app-header">
@@ -77,6 +96,7 @@ export default function App() {
       </header>
       <div className="app-container">
         <div className="controls-bar">
+          <BaselineToggle baseline={baseline} onChange={setBaseline} />
           <ScenarioSelector
             employer={employer}
             employee={employee}
@@ -93,7 +113,8 @@ export default function App() {
         <div className="chart-section">
           <h2>Revenue by cap level</h2>
           <p className="chart-subtitle">
-            {SCENARIO_LABELS[scenario]}, {YEAR_LABELS[year]}
+            vs {baselineLabel} &middot; {SCENARIO_LABELS[scenario]},{" "}
+            {YEAR_LABELS[year]}
           </p>
           <div className="chart-container" style={{ height: 350 }}>
             <RevenueByCapChart
@@ -101,19 +122,28 @@ export default function App() {
               year={year}
               scenario={scenario}
               cap={cap}
+              baseline={baseline}
+              yDomain={ranges?.revenue}
             />
           </div>
         </div>
         <div className="chart-section">
           <h2>Revenue by scenario at {formatCap(cap)} cap</h2>
-          <p className="chart-subtitle">{YEAR_LABELS[year]}</p>
-          <RevenueSummary data={data.results} cap={cap} year={year} />
+          <p className="chart-subtitle">
+            vs {baselineLabel} &middot; {YEAR_LABELS[year]}
+          </p>
+          <RevenueSummary
+            data={data.results}
+            cap={cap}
+            year={year}
+            baseline={baseline}
+          />
         </div>
         <div className="chart-section">
           <h2>Distributional impact by income decile</h2>
           <p className="chart-subtitle">
-            {SCENARIO_LABELS[scenario]}, {formatCap(cap)} cap,{" "}
-            {YEAR_LABELS[year]}
+            vs {baselineLabel} &middot; {SCENARIO_LABELS[scenario]},{" "}
+            {formatCap(cap)} cap, {YEAR_LABELS[year]}
           </p>
           <div className="chart-container" style={{ height: 350 }}>
             <DecileChart
@@ -122,6 +152,8 @@ export default function App() {
               year={year}
               scenario={scenario}
               display={display}
+              baseline={baseline}
+              yDomain={decileDomain}
             />
           </div>
         </div>
@@ -137,6 +169,7 @@ export default function App() {
               cap={cap}
               year={year}
               scenario={scenario}
+              yDomain={ranges?.share}
             />
           </div>
         </div>

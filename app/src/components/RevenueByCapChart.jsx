@@ -7,21 +7,35 @@ import {
   YAxis,
   Tooltip,
   Cell,
+  ReferenceLine,
 } from "recharts";
 import { CAPS, COLORS, FONT_FAMILY } from "../config/constants";
 import { formatCap } from "../utils/formatters";
 import { getRevenueAcrossCaps } from "../utils/dataTransformers";
 
-export default function RevenueByCapChart({ data, year, scenario, cap }) {
-  const revenueData = getRevenueAcrossCaps(data, year, scenario, CAPS).filter(
-    (d) => d.revenue_bn != null,
-  );
+export default function RevenueByCapChart({
+  data,
+  year,
+  scenario,
+  cap,
+  baseline,
+  yDomain,
+}) {
+  const revenueData = getRevenueAcrossCaps(
+    data,
+    year,
+    scenario,
+    CAPS,
+    baseline,
+  ).filter((d) => d.revenue_bn != null);
 
   const chartData = revenueData.map((d) => ({
     label: formatCap(d.cap),
     revenue_bn: d.revenue_bn,
     cap: d.cap,
   }));
+
+  const hasNegative = chartData.some((d) => d.revenue_bn < 0);
 
   return (
     <ResponsiveContainer width="100%" height="100%">
@@ -35,18 +49,29 @@ export default function RevenueByCapChart({ data, year, scenario, cap }) {
           tick={{ fontFamily: FONT_FAMILY, fontSize: 12 }}
         />
         <YAxis
+          domain={yDomain}
           label={{
-            value: "Revenue (\u00a3bn)",
+            value: "Revenue (£bn)",
             angle: -90,
             position: "insideLeft",
-            style: { fontFamily: FONT_FAMILY, fontSize: 12, textAnchor: "middle" },
+            style: {
+              fontFamily: FONT_FAMILY,
+              fontSize: 12,
+              textAnchor: "middle",
+            },
           }}
           tick={{ fontFamily: FONT_FAMILY, fontSize: 12 }}
         />
         <Tooltip
-          formatter={(value) => [`\u00a3${parseFloat(value.toFixed(1))}bn`, "Revenue"]}
+          formatter={(value) => [
+            `£${parseFloat(value.toFixed(1))}bn`,
+            "Revenue",
+          ]}
           contentStyle={{ fontFamily: FONT_FAMILY }}
         />
+        {hasNegative && (
+          <ReferenceLine y={0} stroke={COLORS.teal800} strokeWidth={1} />
+        )}
         <Bar dataKey="revenue_bn">
           {chartData.map((entry, index) => (
             <Cell

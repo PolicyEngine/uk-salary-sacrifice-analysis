@@ -12,11 +12,18 @@ import {
 } from "recharts";
 import { COLORS, FONT_FAMILY } from "../config/constants";
 import { formatPct, formatCurrency } from "../utils/formatters";
-import { getScenarioData } from "../utils/dataTransformers";
+import { getDistributional } from "../utils/dataTransformers";
 
-export default function DecileChart({ data, cap, year, scenario, display }) {
-  const scenarioData = getScenarioData(data, cap, year, scenario);
-  const distributional = scenarioData?.distributional;
+export default function DecileChart({
+  data,
+  cap,
+  year,
+  scenario,
+  display,
+  baseline,
+  yDomain,
+}) {
+  const distributional = getDistributional(data, cap, year, scenario, baseline);
 
   if (!distributional) return null;
 
@@ -66,6 +73,7 @@ export default function DecileChart({ data, cap, year, scenario, display }) {
           tick={{ fontFamily: FONT_FAMILY, fontSize: 12 }}
         />
         <YAxis
+          domain={yDomain}
           label={{
             value: "Change in total income",
             angle: -90,

@@ -3,8 +3,14 @@ import { SCENARIO_KEYS, SCENARIO_LABELS } from "../config/constants";
 import { formatBillions } from "../utils/formatters";
 import { getAllScenariosRevenue } from "../utils/dataTransformers";
 
-export default function RevenueSummary({ data, cap, year }) {
-  const revenues = getAllScenariosRevenue(data, cap, year, SCENARIO_KEYS);
+export default function RevenueSummary({ data, cap, year, baseline }) {
+  const revenues = getAllScenariosRevenue(
+    data,
+    cap,
+    year,
+    SCENARIO_KEYS,
+    baseline,
+  );
 
   return (
     <div className="revenue-grid">

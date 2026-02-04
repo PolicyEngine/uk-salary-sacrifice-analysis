@@ -43,5 +43,10 @@ export const YEAR_LABELS = {
   2030: "2030-31",
 };
 
+export const BASELINE_LABELS = {
+  none: "No cap (pre-budget)",
+  "2000": "£2k cap (current law)",
+};
+
 export const FONT_FAMILY =
   "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";

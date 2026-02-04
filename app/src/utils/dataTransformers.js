@@ -1,3 +1,5 @@
+import { CAPS, SCENARIO_KEYS } from "../config/constants";
+
 /**
  * Get data for a specific cap/year/scenario combo.
  */
@@ -6,28 +8,167 @@ export function getScenarioData(results, cap, year, scenario) {
 }
 
 /**
- * Get revenue across all cap levels for a given year and scenario.
+ * Get revenue across all cap levels for a given year and scenario,
+ * optionally adjusted relative to a baseline cap.
  * Returns array of { cap, revenue_bn } sorted by cap.
  */
-export function getRevenueAcrossCaps(results, year, scenario, caps) {
+export function getRevenueAcrossCaps(
+  results,
+  year,
+  scenario,
+  caps,
+  baselineCap = "none",
+) {
+  const baselineRevenue =
+    baselineCap !== "none"
+      ? getScenarioData(results, Number(baselineCap), year, scenario)
+          ?.revenue_bn ?? 0
+      : 0;
+
   return caps.map((cap) => {
     const data = getScenarioData(results, cap, year, scenario);
+    const raw = data?.revenue_bn ?? null;
     return {
       cap,
-      revenue_bn: data?.revenue_bn ?? null,
+      revenue_bn: raw != null ? raw - baselineRevenue : null,
     };
   });
 }
 
 /**
- * Get all 4 scenarios' revenue for a given cap and year.
- * Returns object keyed by scenario name.
+ * Get all 4 scenarios' revenue for a given cap and year,
+ * optionally adjusted relative to a baseline cap.
  */
-export function getAllScenariosRevenue(results, cap, year, scenarioKeys) {
+export function getAllScenariosRevenue(
+  results,
+  cap,
+  year,
+  scenarioKeys,
+  baselineCap = "none",
+) {
   const out = {};
   for (const key of scenarioKeys) {
     const data = getScenarioData(results, cap, year, key);
-    out[key] = data?.revenue_bn ?? null;
+    const raw = data?.revenue_bn ?? null;
+    if (raw == null) {
+      out[key] = null;
+      continue;
+    }
+    if (baselineCap !== "none") {
+      const baselineData = getScenarioData(
+        results,
+        Number(baselineCap),
+        year,
+        key,
+      );
+      out[key] = raw - (baselineData?.revenue_bn ?? 0);
+    } else {
+      out[key] = raw;
+    }
   }
   return out;
+}
+
+/**
+ * Get distributional data for a cap/year/scenario, adjusted for baseline.
+ * Returns { deciles, pct_change, abs_change, share_affected } or null.
+ */
+export function getDistributional(results, cap, year, scenario, baselineCap) {
+  const data = getScenarioData(results, cap, year, scenario);
+  const dist = data?.distributional;
+  if (!dist) return null;
+
+  if (baselineCap === "none") return dist;
+
+  const baseData = getScenarioData(
+    results,
+    Number(baselineCap),
+    year,
+    scenario,
+  );
+  const baseDist = baseData?.distributional;
+  if (!baseDist) return dist;
+
+  return {
+    deciles: dist.deciles,
+    pct_change: dist.pct_change.map(
+      (v, i) => v - (baseDist.pct_change[i] ?? 0),
+    ),
+    abs_change: dist.abs_change.map(
+      (v, i) => v - (baseDist.abs_change[i] ?? 0),
+    ),
+    share_affected: dist.share_affected,
+  };
+}
+
+/**
+ * Compute global y-axis ranges across all caps, scenarios, and years
+ * for consistent axes regardless of selection.
+ */
+export function computeGlobalRanges(results, baselineCap) {
+  let minRevenue = Infinity;
+  let maxRevenue = -Infinity;
+  let minPct = Infinity;
+  let maxPct = -Infinity;
+  let minAbs = Infinity;
+  let maxAbs = -Infinity;
+  let maxShare = 0;
+
+  for (const cap of CAPS) {
+    for (const year of [2029, 2030]) {
+      for (const scenario of SCENARIO_KEYS) {
+        // Revenue
+        const revData = getRevenueAcrossCaps(
+          results,
+          year,
+          scenario,
+          [cap],
+          baselineCap,
+        );
+        const rev = revData[0]?.revenue_bn;
+        if (rev != null) {
+          minRevenue = Math.min(minRevenue, rev);
+          maxRevenue = Math.max(maxRevenue, rev);
+        }
+
+        // Distributional
+        const dist = getDistributional(
+          results,
+          cap,
+          year,
+          scenario,
+          baselineCap,
+        );
+        if (dist) {
+          for (const v of dist.pct_change) {
+            minPct = Math.min(minPct, v);
+            maxPct = Math.max(maxPct, v);
+          }
+          for (const v of dist.abs_change) {
+            minAbs = Math.min(minAbs, v);
+            maxAbs = Math.max(maxAbs, v);
+          }
+          for (const v of dist.share_affected) {
+            maxShare = Math.max(maxShare, v * 100);
+          }
+        }
+      }
+    }
+  }
+
+  // Add padding
+  const revPad = (maxRevenue - minRevenue) * 0.05 || 0.5;
+  const pctPad = (maxPct - minPct) * 0.1 || 0.05;
+  const absPad = (maxAbs - minAbs) * 0.1 || 50;
+  const sharePad = maxShare * 0.1 || 1;
+
+  return {
+    revenue: [
+      Math.min(0, minRevenue - revPad),
+      maxRevenue + revPad,
+    ],
+    pct: [minPct - pctPad, Math.max(0, maxPct + pctPad)],
+    abs: [minAbs - absPad, Math.max(0, maxAbs + absPad)],
+    share: [0, maxShare + sharePad],
+  };
 }
