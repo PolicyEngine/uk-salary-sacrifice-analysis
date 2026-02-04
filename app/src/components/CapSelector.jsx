@@ -9,14 +9,14 @@ export default function CapSelector({ cap, onChange }) {
         className="cap-slider"
         type="range"
         min={0}
-        max={10000}
+        max={6000}
         step={1000}
         value={cap}
         onChange={(e) => onChange(Number(e.target.value))}
       />
       <div className="cap-slider-labels">
         <span>{formatCap(0)}</span>
-        <span>{formatCap(10000)}</span>
+        <span>{formatCap(6000)}</span>
       </div>
     </>
   );

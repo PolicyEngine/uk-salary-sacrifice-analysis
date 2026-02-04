@@ -11,7 +11,7 @@ export const COLORS = {
   white: "#FFFFFF",
 };
 
-export const CAPS = [0, 1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000];
+export const CAPS = [0, 1000, 2000, 3000, 4000, 5000, 6000];
 export const REFERENCE_CAP = 2000;
 
 export const SCENARIO_KEYS = [

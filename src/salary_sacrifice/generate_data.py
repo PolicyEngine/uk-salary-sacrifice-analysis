@@ -18,7 +18,7 @@ from salary_sacrifice.reforms import (
 )
 
 # Configuration
-CAP_LEVELS = list(range(0, 11_000, 1_000))  # £0 to £10k in £1k steps
+CAP_LEVELS = list(range(0, 7_000, 1_000))  # £0 to £6k in £1k steps
 SCENARIOS = [
     (
         "spread_maintain",

@@ -198,6 +198,7 @@ def calculate_distributional_impact(
     hh_has_excess = baseline_ss > scenario.cap_amount
 
     deciles = baseline.calculate("household_income_decile", period=year).values
+    weights = baseline.calculate("household_weight", period=year).values
 
     results = []
     for decile in range(1, 11):
@@ -206,13 +207,20 @@ def calculate_distributional_impact(
         if mask.sum() == 0:
             continue
 
-        avg_baseline = baseline_income[mask].mean()
-        avg_reformed = reformed_income[mask].mean()
+        decile_weights = weights[mask]
+        total_weight = decile_weights.sum()
+
+        if total_weight == 0:
+            continue
+
+        # Weighted averages
+        avg_baseline = (baseline_income[mask] * decile_weights).sum() / total_weight
+        avg_reformed = (reformed_income[mask] * decile_weights).sum() / total_weight
         avg_change = avg_reformed - avg_baseline
         pct_change = 100 * avg_change / avg_baseline if avg_baseline != 0 else 0
 
-        # Share of households in this decile affected by the cap
-        share_affected = hh_has_excess[mask].mean()
+        # Weighted share of households in this decile affected by the cap
+        share_affected = (hh_has_excess[mask] * decile_weights).sum() / total_weight
 
         results.append(
             {
