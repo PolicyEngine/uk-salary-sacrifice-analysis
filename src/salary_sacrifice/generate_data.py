@@ -22,9 +22,17 @@ from salary_sacrifice.reforms import (
 # Configuration
 CAP_LEVELS = list(range(0, 11_000, 1_000))  # £0 to £10k in £1k steps
 SCENARIOS = [
-    ("spread_maintain", EmployerResponse.SPREAD_COST, EmployeeResponse.MAINTAIN_PENSION),
+    (
+        "spread_maintain",
+        EmployerResponse.SPREAD_COST,
+        EmployeeResponse.MAINTAIN_PENSION,
+    ),
     ("spread_cash", EmployerResponse.SPREAD_COST, EmployeeResponse.TAKE_CASH),
-    ("absorb_maintain", EmployerResponse.ABSORB_COST, EmployeeResponse.MAINTAIN_PENSION),
+    (
+        "absorb_maintain",
+        EmployerResponse.ABSORB_COST,
+        EmployeeResponse.MAINTAIN_PENSION,
+    ),
     ("absorb_cash", EmployerResponse.ABSORB_COST, EmployeeResponse.TAKE_CASH),
 ]
 YEARS = [2029, 2030]
@@ -74,9 +82,7 @@ def run_single_combo(cap, year, scenario_name, employer_response, employee_respo
         "distributional": {
             "deciles": [int(v) for v in dist_df["decile"].tolist()],
             "pct_change": [round(float(v), 4) for v in dist_df["pct_change"].tolist()],
-            "abs_change": [
-                round(float(v), 2) for v in dist_df["avg_change"].tolist()
-            ],
+            "abs_change": [round(float(v), 2) for v in dist_df["avg_change"].tolist()],
             "share_affected": [
                 round(float(v), 6) for v in dist_df["share_affected"].tolist()
             ],
