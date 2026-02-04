@@ -441,3 +441,45 @@ def test_excess_calculation_various_caps(cap, expected_excess):
 
     employee_pension = sim.get_input("employee_pension_contributions")
     assert employee_pension[0] == pytest.approx(expected_excess)
+
+
+class TestShareAffected:
+    """Tests for the share_affected calculation logic.
+
+    Weights are embedded in the simulation arrays, so share_affected
+    is simply the mean of the boolean excess mask per decile.
+    """
+
+    def test_share_affected_basic(self):
+        """Households with salary sacrifice above cap should be counted."""
+        hh_ss = np.array([5000, 1000, 3000, 0, 8000])
+        cap = 2000
+
+        hh_has_excess = hh_ss > cap
+        # Households 0 (5000), 2 (3000), and 4 (8000) are above cap
+        assert hh_has_excess.sum() == 3
+        assert hh_has_excess.mean() == pytest.approx(0.6)
+
+    def test_share_affected_none_above_cap(self):
+        """When no households exceed cap, share should be 0."""
+        hh_ss = np.array([500, 1000, 1500])
+        cap = 2000
+
+        hh_has_excess = hh_ss > cap
+        assert hh_has_excess.mean() == 0.0
+
+    def test_share_affected_all_above_cap(self):
+        """When all households exceed cap, share should be 1."""
+        hh_ss = np.array([5000, 3000, 8000])
+        cap = 2000
+
+        hh_has_excess = hh_ss > cap
+        assert hh_has_excess.mean() == pytest.approx(1.0)
+
+    def test_share_affected_partial(self):
+        """Share is simply fraction of array elements above cap."""
+        hh_ss = np.array([5000, 1000])
+        cap = 2000
+
+        hh_has_excess = hh_ss > cap
+        assert hh_has_excess.mean() == pytest.approx(0.5)

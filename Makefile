@@ -1,4 +1,4 @@
-.PHONY: install test format lint clean help
+.PHONY: install test format lint clean help generate-data
 
 help:
 	@echo "Available commands:"
@@ -21,6 +21,9 @@ format:
 lint:
 	black --check .
 	ruff check .
+
+generate-data:
+	uv run ss-analysis generate-data
 
 clean:
 	rm -rf build/ dist/ *.egg-info/

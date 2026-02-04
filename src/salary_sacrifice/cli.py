@@ -200,6 +200,11 @@ main.add_command(run_matrix, "matrix")
 main.add_command(run_single, "single")
 main.add_command(distributional, "distributional")
 
+# Import and register generate-data command
+from salary_sacrifice.generate_data import generate_data
+
+main.add_command(generate_data, "generate-data")
+
 
 if __name__ == "__main__":
     main()

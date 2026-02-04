@@ -176,12 +176,16 @@ def calculate_distributional_impact(
 
     # Sum person-level salary sacrifice to household level
     baseline_ss = baseline.map_result(
-        baseline.calculate("pension_contributions_via_salary_sacrifice", period=year).values,
+        baseline.calculate(
+            "pension_contributions_via_salary_sacrifice", period=year
+        ).values,
         "person",
         "household",
     )
     reformed_ss = reformed.map_result(
-        reformed.calculate("pension_contributions_via_salary_sacrifice", period=year).values,
+        reformed.calculate(
+            "pension_contributions_via_salary_sacrifice", period=year
+        ).values,
         "person",
         "household",
     )
@@ -190,27 +194,25 @@ def calculate_distributional_impact(
     baseline_income = baseline_net + baseline_ss
     reformed_income = reformed_net + reformed_ss
 
+    # Household-level: does any member have salary sacrifice above the cap?
+    hh_has_excess = baseline_ss > scenario.cap_amount
+
     deciles = baseline.calculate("household_income_decile", period=year).values
-    weights = baseline.calculate("household_weight", period=year).values
 
     results = []
     for decile in range(1, 11):
         mask = deciles == decile
 
-        # Manual weighted calculation using numpy arrays
-        w = weights[mask]
-        total_weight = w.sum()
-
-        if total_weight == 0:
+        if mask.sum() == 0:
             continue
 
-        baseline_weighted = (baseline_income[mask] * w).sum()
-        reformed_weighted = (reformed_income[mask] * w).sum()
-
-        avg_baseline = baseline_weighted / total_weight
-        avg_reformed = reformed_weighted / total_weight
+        avg_baseline = baseline_income[mask].mean()
+        avg_reformed = reformed_income[mask].mean()
         avg_change = avg_reformed - avg_baseline
         pct_change = 100 * avg_change / avg_baseline if avg_baseline != 0 else 0
+
+        # Share of households in this decile affected by the cap
+        share_affected = hh_has_excess[mask].mean()
 
         results.append(
             {
@@ -219,7 +221,7 @@ def calculate_distributional_impact(
                 "avg_reformed_income": avg_reformed,
                 "avg_change": avg_change,
                 "pct_change": pct_change,
-                "population": total_weight,
+                "share_affected": share_affected,
             }
         )
 
