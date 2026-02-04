@@ -25,10 +25,6 @@ from enum import Enum
 from typing import Callable
 
 import numpy as np
-from policyengine_core.model_api import Reform
-from policyengine_uk.variables.household.income.household_net_income import (
-    household_net_income as original_household_net_income,
-)
 
 
 def apply_income_including_pensions(sim) -> None:

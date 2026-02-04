@@ -5,12 +5,10 @@ to produce a single JSON file consumed by the React frontend.
 """
 
 import json
-import sys
 import time
 from pathlib import Path
 
 import click
-import numpy as np
 
 from salary_sacrifice.analysis import calculate_distributional_impact, run_scenario
 from salary_sacrifice.reforms import (

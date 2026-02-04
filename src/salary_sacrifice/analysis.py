@@ -170,7 +170,7 @@ def calculate_distributional_impact(
     # Salary sacrifice is tax-free pension that doesn't come out of net income,
     # so we add it to get total household resources. Employee pension contributions
     # already reduce net income so don't need to be added.
-    # This ensures that capping salary sacrifice shows as a LOSS (less tax-free pension).
+    # Capping salary sacrifice shows as a LOSS (less tax-free pension).
     baseline_net = baseline.calculate("household_net_income", period=year).values
     reformed_net = reformed.calculate("household_net_income", period=year).values
 
