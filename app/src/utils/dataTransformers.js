@@ -156,19 +156,17 @@ export function computeGlobalRanges(results, baselineCap) {
     }
   }
 
-  // Add padding
-  const revPad = (maxRevenue - minRevenue) * 0.05 || 0.5;
-  const pctPad = (maxPct - minPct) * 0.1 || 0.05;
-  const absPad = (maxAbs - minAbs) * 0.1 || 50;
-  const sharePad = maxShare * 0.1 || 1;
+  // Round to nice axis boundaries
+  const niceFloor = (v, step) => Math.floor(v / step) * step;
+  const niceCeil = (v, step) => Math.ceil(v / step) * step;
 
   return {
     revenue: [
-      Math.min(0, minRevenue - revPad),
-      maxRevenue + revPad,
+      niceFloor(Math.min(0, minRevenue), 1),
+      niceCeil(maxRevenue, 1),
     ],
-    pct: [minPct - pctPad, Math.max(0, maxPct + pctPad)],
-    abs: [minAbs - absPad, Math.max(0, maxAbs + absPad)],
-    share: [0, maxShare + sharePad],
+    pct: [niceFloor(minPct, 0.1), niceCeil(Math.max(0, maxPct), 0.1)],
+    abs: [niceFloor(minAbs, 100), niceCeil(Math.max(0, maxAbs), 100)],
+    share: [0, niceCeil(maxShare, 1)],
   };
 }
