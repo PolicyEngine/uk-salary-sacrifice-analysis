@@ -85,8 +85,8 @@
         <div class="control-group">
             <h3>Display</h3>
             <div class="toggle-buttons">
-                <button class="toggle-btn active" data-display="relative" onclick="setDisplay('relative')">Relative (%)</button>
-                <button class="toggle-btn" data-display="absolute" onclick="setDisplay('absolute')">Absolute (£)</button>
+                <button class="toggle-btn" data-display="relative" onclick="setDisplay('relative')">Relative (%)</button>
+                <button class="toggle-btn active" data-display="absolute" onclick="setDisplay('absolute')">Absolute (£)</button>
             </div>
         </div>
     </div>
@@ -126,7 +126,7 @@
 
         let currentEmployer = 'spread';
         let currentEmployee = 'maintain';
-        let currentDisplay = 'relative';
+        let currentDisplay = 'absolute';
 
         function getScenarioKey() {
             return `${currentEmployer}_${currentEmployee}`;
