@@ -439,7 +439,9 @@ export default function NoBehavioralTab() {
         </a>
         , taking effect from April 2029. Above this threshold, standard NI rates
         would apply. This tool shows the static impact assuming no behavioural
-        response from employers or employees. See the{" "}
+        response from employers or employees, while the behavioural tab models
+        different scenarios for how employers and employees might adjust their
+        contributions in response to the cap. See the{" "}
         <a href="https://www.policyengine.org/uk/research/uk-salary-sacrifice-cap">
           full report
         </a>{" "}

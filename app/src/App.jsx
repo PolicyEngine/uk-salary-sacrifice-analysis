@@ -77,9 +77,10 @@ function BehavioralTab({
           Autumn Budget 2025
         </a>
         , taking effect from April 2029. Above this threshold, standard NI rates
-        would apply. This tool models revenue and distributional outcomes under
-        different behavioural assumptions about employer and employee responses.
-        See the{" "}
+        would apply. Unlike the no behavioural tab, which assumes no change in
+        behaviour, this tool models revenue and distributional outcomes under
+        different behavioural assumptions about how employers and employees
+        might adjust their contributions in response to the cap. See the{" "}
         <a href="https://www.policyengine.org/uk/research/uk-salary-sacrifice-cap">
           full report
         </a>{" "}
