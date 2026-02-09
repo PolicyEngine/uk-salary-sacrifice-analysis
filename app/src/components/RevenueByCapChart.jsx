@@ -8,9 +8,11 @@ import {
   Tooltip,
   Cell,
   ReferenceLine,
+  CartesianGrid,
+  LabelList,
 } from "recharts";
 import { CAPS, COLORS, FONT_FAMILY } from "../config/constants";
-import { formatCap } from "../utils/formatters";
+import { formatCap, computeNiceDomain } from "../utils/formatters";
 import { getRevenueAcrossCaps } from "../utils/dataTransformers";
 
 export default function RevenueByCapChart({
@@ -19,7 +21,6 @@ export default function RevenueByCapChart({
   scenario,
   cap,
   baseline,
-  yDomain,
 }) {
   const revenueData = getRevenueAcrossCaps(
     data,
@@ -33,23 +34,27 @@ export default function RevenueByCapChart({
     label: formatCap(d.cap),
     revenue_bn: d.revenue_bn,
     cap: d.cap,
+    barLabel: `£${parseFloat(d.revenue_bn.toFixed(1))}bn`,
   }));
 
   const hasNegative = chartData.some((d) => d.revenue_bn < 0);
+  const yDomain = computeNiceDomain(chartData.map((d) => d.revenue_bn));
 
   return (
     <ResponsiveContainer width="100%" height="100%">
       <BarChart
         data={chartData}
-        margin={{ top: 10, right: 20, bottom: 40, left: 60 }}
+        margin={{ top: 30, right: 20, bottom: 40, left: 15 }}
         barCategoryGap="20%"
       >
+        <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
         <XAxis
           dataKey="label"
           tick={{ fontFamily: FONT_FAMILY, fontSize: 12 }}
         />
         <YAxis
           domain={yDomain}
+          allowDataOverflow
           label={{
             value: "Revenue (£bn)",
             angle: -90,
@@ -79,6 +84,24 @@ export default function RevenueByCapChart({
               fill={entry.cap === cap ? COLORS.teal700 : COLORS.teal500}
             />
           ))}
+          <LabelList
+            dataKey="barLabel"
+            content={({ x, y, width, height, value, index }) => {
+              const isNeg = chartData[index]?.revenue_bn < 0;
+              const barTop = Math.min(y, y + height);
+              const barBottom = Math.max(y, y + height);
+              return (
+                <text
+                  x={x + width / 2}
+                  y={isNeg ? barBottom + 14 : barTop - 6}
+                  textAnchor="middle"
+                  style={{ fontFamily: FONT_FAMILY, fontSize: 10, fill: COLORS.teal700 }}
+                >
+                  {value}
+                </text>
+              );
+            }}
+          />
         </Bar>
       </BarChart>
     </ResponsiveContainer>
