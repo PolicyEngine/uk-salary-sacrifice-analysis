@@ -5,7 +5,6 @@ import {
   YEAR_LABELS,
   BASELINE_LABELS,
 } from "./config/constants";
-import TabSelector from "./components/TabSelector";
 import ScenarioSelector from "./components/ScenarioSelector";
 import YearToggle from "./components/YearToggle";
 import DisplayToggle from "./components/DisplayToggle";
@@ -15,14 +14,12 @@ import RevenueByCapChart from "./components/RevenueByCapChart";
 import RevenueSummary from "./components/RevenueSummary";
 import DecileChart from "./components/DecileChart";
 import AffectedShareChart from "./components/AffectedShareChart";
-import NoBehavioralTab from "./components/NoBehavioralTab";
 import InfoTooltip from "./components/InfoTooltip";
 import { formatCap } from "./utils/formatters";
 
 function getInitialState() {
   const params = new URLSearchParams(window.location.search);
   return {
-    tab: params.get("tab") || "no-behavioral",
     cap: Number(params.get("cap")) || 5000,
     year: Number(params.get("year")) || 2029,
     employer: params.get("employer") || "spread",
@@ -34,7 +31,6 @@ function getInitialState() {
 
 function syncQueryParams(state) {
   const params = new URLSearchParams();
-  params.set("tab", state.tab);
   params.set("cap", state.cap);
   params.set("year", state.year);
   params.set("employer", state.employer);
@@ -77,10 +73,9 @@ function BehavioralTab({
           Autumn Budget 2025
         </a>
         , taking effect from April 2029. Above this threshold, standard NI rates
-        would apply. Unlike the no-behavioural-responses tab, which assumes no
-        change in behaviour, this tool models revenue and distributional
-        outcomes under different behavioural assumptions about how employers
-        and employees might adjust their contributions in response to the cap. See the{" "}
+        would apply. This tool models revenue and distributional outcomes under
+        different behavioural assumptions about how employers and employees
+        might adjust their contributions in response to the cap. See the{" "}
         <a href="https://www.policyengine.org/uk/research/uk-salary-sacrifice-cap">
           full report
         </a>{" "}
@@ -194,7 +189,6 @@ export default function App() {
   const { data, loading, error } = useSimulationData();
 
   const initial = getInitialState();
-  const [tab, setTab] = useState(initial.tab);
   const [cap, setCap] = useState(initial.cap);
   const [year, setYear] = useState(initial.year);
   const [employer, setEmployer] = useState(initial.employer);
@@ -203,10 +197,10 @@ export default function App() {
   const [baseline, setBaseline] = useState(initial.baseline);
 
   useEffect(() => {
-    syncQueryParams({ tab, cap, year, employer, employee, display, baseline });
-  }, [tab, cap, year, employer, employee, display, baseline]);
+    syncQueryParams({ cap, year, employer, employee, display, baseline });
+  }, [cap, year, employer, employee, display, baseline]);
 
-  if (loading && tab === "behavioral") {
+  if (loading) {
     return (
       <div className="loading-state">
         <p>Loading simulation data...</p>
@@ -214,7 +208,7 @@ export default function App() {
     );
   }
 
-  if (error && tab === "behavioral") {
+  if (error) {
     return (
       <div className="error-state">
         <p>Failed to load data: {error}</p>
@@ -228,11 +222,9 @@ export default function App() {
         <div className="header-text">
           <h1>Salary sacrifice cap analysis tool</h1>
         </div>
-        <TabSelector activeTab={tab} onChange={setTab} />
       </header>
       <div className="app-container">
-
-        {tab === "behavioral" && data && (
+        {data && (
           <BehavioralTab
             data={data}
             cap={cap}
@@ -249,8 +241,6 @@ export default function App() {
             setBaseline={setBaseline}
           />
         )}
-
-        {tab === "no-behavioral" && <NoBehavioralTab />}
       </div>
       <footer className="app-footer">
         Analysis by <a href="https://policyengine.org">PolicyEngine</a> |{" "}
