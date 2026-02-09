@@ -12,7 +12,7 @@ import {
   LabelList,
 } from "recharts";
 import { CAPS, COLORS, FONT_FAMILY } from "../config/constants";
-import { formatCap, computeNiceDomain } from "../utils/formatters";
+import { formatCap, computeNiceAxis } from "../utils/formatters";
 import { getRevenueAcrossCaps } from "../utils/dataTransformers";
 
 export default function RevenueByCapChart({
@@ -38,7 +38,7 @@ export default function RevenueByCapChart({
   }));
 
   const hasNegative = chartData.some((d) => d.revenue_bn < 0);
-  const yDomain = computeNiceDomain(chartData.map((d) => d.revenue_bn));
+  const { domain: yDomain, ticks: yTicks } = computeNiceAxis(chartData.map((d) => d.revenue_bn));
 
   return (
     <ResponsiveContainer width="100%" height="100%">
@@ -54,6 +54,7 @@ export default function RevenueByCapChart({
         />
         <YAxis
           domain={yDomain}
+          ticks={yTicks}
           allowDataOverflow
           label={{
             value: "Revenue (£bn)",

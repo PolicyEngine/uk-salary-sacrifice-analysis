@@ -12,7 +12,7 @@ import {
   LabelList,
 } from "recharts";
 import { COLORS, FONT_FAMILY } from "../config/constants";
-import { formatPct, formatCurrency, computeNiceDomain } from "../utils/formatters";
+import { formatPct, formatCurrency, computeNiceAxis } from "../utils/formatters";
 import { getDistributional } from "../utils/dataTransformers";
 
 export default function DecileChart({
@@ -48,7 +48,7 @@ export default function DecileChart({
     };
   });
 
-  const yDomain = computeNiceDomain(chartData.map((d) => d.value));
+  const { domain: yDomain, ticks: yTicks } = computeNiceAxis(chartData.map((d) => d.value));
 
   const formatYTick = (value) => {
     if (isRelative) {
@@ -77,6 +77,7 @@ export default function DecileChart({
         />
         <YAxis
           domain={yDomain}
+          ticks={yTicks}
           allowDataOverflow
           label={{
             value: "Change in total income",

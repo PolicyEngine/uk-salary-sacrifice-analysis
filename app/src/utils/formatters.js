@@ -40,12 +40,11 @@ export function formatCap(value) {
 }
 
 /**
- * Compute a nice Y-axis domain from an array of values.
- * Always includes 0, adds padding, and rounds to clean tick values.
+ * Internal: compute domain, ticks and step from values.
  */
-export function computeNiceDomain(values, padding = 0.2) {
+function computeAxis(values, padding = 0.2) {
   const filtered = values.filter((v) => v != null && isFinite(v));
-  if (filtered.length === 0) return [0, 1];
+  if (filtered.length === 0) return { domain: [0, 1], ticks: [0, 1] };
 
   let min = Math.min(0, ...filtered);
   let max = Math.max(0, ...filtered);
@@ -60,5 +59,28 @@ export function computeNiceDomain(values, padding = 0.2) {
   const nice = [1, 2, 2.5, 5, 10];
   const step = nice.find((n) => n * magnitude >= rawStep) * magnitude;
 
-  return [Math.floor(min / step) * step, Math.ceil(max / step) * step];
+  const domainMin = Math.floor(min / step) * step;
+  const domainMax = Math.ceil(max / step) * step;
+
+  const ticks = [];
+  for (let v = domainMin; v <= domainMax + step * 0.0001; v += step) {
+    ticks.push(Math.round(v * 1e10) / 1e10);
+  }
+
+  return { domain: [domainMin, domainMax], ticks };
+}
+
+/**
+ * Compute a nice Y-axis domain from an array of values.
+ * Always includes 0, adds padding, and rounds to clean tick values.
+ */
+export function computeNiceDomain(values, padding = 0.2) {
+  return computeAxis(values, padding).domain;
+}
+
+/**
+ * Compute a nice Y-axis domain AND explicit tick values (always including 0).
+ */
+export function computeNiceAxis(values, padding = 0.2) {
+  return computeAxis(values, padding);
 }

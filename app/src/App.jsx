@@ -96,7 +96,7 @@ function BehavioralTab({
                 ?.scrollIntoView({ behavior: "smooth" })
             }
           >
-            Calculate &rarr;
+            View results &darr;
           </button>
         </div>
         <div className="controls-section">

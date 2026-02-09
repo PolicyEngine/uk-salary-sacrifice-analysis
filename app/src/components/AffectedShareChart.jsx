@@ -11,7 +11,7 @@ import {
   ReferenceLine,
 } from "recharts";
 import { COLORS, FONT_FAMILY } from "../config/constants";
-import { computeNiceDomain } from "../utils/formatters";
+import { computeNiceAxis } from "../utils/formatters";
 import { getScenarioData, getDistributional } from "../utils/dataTransformers";
 
 export default function AffectedShareChart({
@@ -45,7 +45,7 @@ export default function AffectedShareChart({
     };
   });
 
-  const yDomain = computeNiceDomain([
+  const { domain: yDomain, ticks: yTicks } = computeNiceAxis([
     ...chartData.map((d) => d.winners),
     ...chartData.map((d) => d.losers),
   ]);
@@ -70,6 +70,7 @@ export default function AffectedShareChart({
         />
         <YAxis
           domain={yDomain}
+          ticks={yTicks}
           allowDataOverflow
           tickFormatter={(v) => `${Math.abs(v)}%`}
           label={{

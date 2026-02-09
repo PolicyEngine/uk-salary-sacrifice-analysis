@@ -12,7 +12,7 @@ import DisplayToggle from "./DisplayToggle";
 import BaselineToggle from "./BaselineToggle";
 import CapSelector from "./CapSelector";
 import InfoTooltip from "./InfoTooltip";
-import { formatCap, formatBillions, computeNiceDomain } from "../utils/formatters";
+import { formatCap, formatBillions, computeNiceAxis } from "../utils/formatters";
 import {
   BarChart,
   Bar,
@@ -86,7 +86,7 @@ function RevenueByCapChartNB({ data, year, cap, baseline }) {
     }));
 
   const hasNegative = chartData.some((d) => d.revenue_bn < 0);
-  const yDomain = computeNiceDomain(chartData.map((d) => d.revenue_bn));
+  const { domain: yDomain, ticks: yTicks } = computeNiceAxis(chartData.map((d) => d.revenue_bn));
 
   return (
     <ResponsiveContainer width="100%" height="100%">
@@ -102,6 +102,7 @@ function RevenueByCapChartNB({ data, year, cap, baseline }) {
         />
         <YAxis
           domain={yDomain}
+          ticks={yTicks}
           allowDataOverflow
           label={{
             value: "Revenue (£bn)",
@@ -182,7 +183,7 @@ function DecileChartNB({ data, cap, year, display, baseline }) {
     };
   });
 
-  const yDomain = computeNiceDomain(chartData.map((d) => d.value));
+  const { domain: yDomain, ticks: yTicks } = computeNiceAxis(chartData.map((d) => d.value));
 
   const formatYTick = (value) => {
     if (isRelative) return `${value}%`;
@@ -209,6 +210,7 @@ function DecileChartNB({ data, cap, year, display, baseline }) {
         />
         <YAxis
           domain={yDomain}
+          ticks={yTicks}
           allowDataOverflow
           label={{
             value: "Change in household income",
@@ -268,7 +270,7 @@ function RevenueSummaryNB({ data, cap, year, baseline }) {
   return (
     <div className="revenue-grid" style={{ gridTemplateColumns: "1fr" }}>
       <div className="revenue-card">
-        <div className="label">No behavioral response</div>
+        <div className="label">No behavioural response</div>
         <div className="value">
           {revenue != null ? formatBillions(revenue) : "\u2014"}
         </div>
@@ -289,7 +291,7 @@ function WinnersLosersChart({ data, cap, year, baseline }) {
     losersLabel: `${wl.pct_losers[i].toFixed(1)}%`,
   }));
 
-  const yDomain = computeNiceDomain([
+  const { domain: yDomain, ticks: yTicks } = computeNiceAxis([
     ...chartData.map((d) => d.winners),
     ...chartData.map((d) => d.losers),
   ]);
@@ -314,6 +316,7 @@ function WinnersLosersChart({ data, cap, year, baseline }) {
         />
         <YAxis
           domain={yDomain}
+          ticks={yTicks}
           allowDataOverflow
           tickFormatter={(v) => `${Math.abs(v)}%`}
           label={{
@@ -405,7 +408,7 @@ export default function NoBehavioralTab() {
   if (loading) {
     return (
       <div className="loading-state">
-        <p>Loading no-behavioral simulation data...</p>
+        <p>Loading no-behavioural simulation data...</p>
       </div>
     );
   }
@@ -414,7 +417,7 @@ export default function NoBehavioralTab() {
     return (
       <div className="error-state">
         <p>
-          No behavioral response data not yet generated. Run:{" "}
+          No behavioural response data not yet generated. Run:{" "}
           <code>salary-sacrifice generate-no-behavioral</code>
         </p>
       </div>
@@ -453,7 +456,7 @@ export default function NoBehavioralTab() {
                 ?.scrollIntoView({ behavior: "smooth" })
             }
           >
-            Calculate &rarr;
+            View results &darr;
           </button>
         </div>
         <div className="controls-section">
