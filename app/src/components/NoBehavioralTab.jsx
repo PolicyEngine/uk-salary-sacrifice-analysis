@@ -450,16 +450,6 @@ export default function NoBehavioralTab() {
       <div className="controls-card">
         <div className="controls-card-header">
           <h2>Analysis settings</h2>
-          <button
-            className="calculate-btn"
-            onClick={() =>
-              document
-                .querySelector(".chart-section")
-                ?.scrollIntoView({ behavior: "smooth" })
-            }
-          >
-            View results &darr;
-          </button>
         </div>
         <div className="controls-section">
           <div className="controls-section-label">Policy</div>
