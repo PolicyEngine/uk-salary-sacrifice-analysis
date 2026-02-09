@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect } from "react";
 import { useNoBehavioralData } from "../hooks/useNoBehavioralData";
 import {
   YEAR_LABELS,
@@ -11,7 +11,8 @@ import YearToggle from "./YearToggle";
 import DisplayToggle from "./DisplayToggle";
 import BaselineToggle from "./BaselineToggle";
 import CapSelector from "./CapSelector";
-import { formatCap, formatBillions } from "../utils/formatters";
+import InfoTooltip from "./InfoTooltip";
+import { formatCap, formatBillions, computeNiceDomain } from "../utils/formatters";
 import {
   BarChart,
   Bar,
@@ -20,6 +21,8 @@ import {
   Tooltip,
   ResponsiveContainer,
   ReferenceLine,
+  CartesianGrid,
+  LabelList,
   Cell,
 } from "recharts";
 
@@ -70,49 +73,8 @@ function getWinnersLosers(results, baseline, cap, year) {
   return data?.winners_losers ?? null;
 }
 
-function computeGlobalRanges(results, baseline) {
-  let minRev = 0,
-    maxRev = 0;
-  let minPct = 0,
-    maxPct = 0;
-  let minAbs = 0,
-    maxAbs = 0;
 
-  for (const year of [2029, 2030]) {
-    const revenueData = getRevenueData(results, baseline, year, CAPS);
-    revenueData.forEach(({ revenue_bn }) => {
-      if (revenue_bn != null) {
-        minRev = Math.min(minRev, revenue_bn);
-        maxRev = Math.max(maxRev, revenue_bn);
-      }
-    });
-
-    for (const cap of CAPS) {
-      const dist = getDistributional(results, baseline, cap, year);
-      if (dist) {
-        dist.pct_change.forEach((v) => {
-          minPct = Math.min(minPct, v);
-          maxPct = Math.max(maxPct, v);
-        });
-        dist.abs_change.forEach((v) => {
-          minAbs = Math.min(minAbs, v);
-          maxAbs = Math.max(maxAbs, v);
-        });
-      }
-    }
-  }
-
-  const niceFloor = (v, step) => Math.floor(v / step) * step;
-  const niceCeil = (v, step) => Math.ceil(v / step) * step;
-
-  return {
-    revenue: [niceFloor(Math.min(0, minRev), 1), niceCeil(maxRev, 1)],
-    pct: [niceFloor(minPct, 0.1), niceCeil(Math.max(0, maxPct), 0.1)],
-    abs: [niceFloor(minAbs, 100), niceCeil(Math.max(0, maxAbs), 100)],
-  };
-}
-
-function RevenueByCapChartNB({ data, year, cap, baseline, yDomain }) {
+function RevenueByCapChartNB({ data, year, cap, baseline }) {
   const revenueData = getRevenueData(data.results, baseline, year, CAPS);
   const chartData = revenueData
     .filter((d) => d.revenue_bn != null)
@@ -120,23 +82,27 @@ function RevenueByCapChartNB({ data, year, cap, baseline, yDomain }) {
       label: formatCap(d.cap),
       revenue_bn: d.revenue_bn,
       cap: d.cap,
+      barLabel: `£${parseFloat(d.revenue_bn.toFixed(1))}bn`,
     }));
 
   const hasNegative = chartData.some((d) => d.revenue_bn < 0);
+  const yDomain = computeNiceDomain(chartData.map((d) => d.revenue_bn));
 
   return (
     <ResponsiveContainer width="100%" height="100%">
       <BarChart
         data={chartData}
-        margin={{ top: 10, right: 20, bottom: 40, left: 60 }}
+        margin={{ top: 30, right: 20, bottom: 40, left: 15 }}
         barCategoryGap="20%"
       >
+        <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
         <XAxis
           dataKey="label"
           tick={{ fontFamily: FONT_FAMILY, fontSize: 12 }}
         />
         <YAxis
           domain={yDomain}
+          allowDataOverflow
           label={{
             value: "Revenue (£bn)",
             angle: -90,
@@ -166,13 +132,31 @@ function RevenueByCapChartNB({ data, year, cap, baseline, yDomain }) {
               fill={entry.cap === cap ? COLORS.teal700 : COLORS.teal500}
             />
           ))}
+          <LabelList
+            dataKey="barLabel"
+            content={({ x, y, width, height, value, index }) => {
+              const isNeg = chartData[index]?.revenue_bn < 0;
+              const barTop = Math.min(y, y + height);
+              const barBottom = Math.max(y, y + height);
+              return (
+                <text
+                  x={x + width / 2}
+                  y={isNeg ? barBottom + 14 : barTop - 6}
+                  textAnchor="middle"
+                  style={{ fontFamily: FONT_FAMILY, fontSize: 10, fill: COLORS.teal700 }}
+                >
+                  {value}
+                </text>
+              );
+            }}
+          />
         </Bar>
       </BarChart>
     </ResponsiveContainer>
   );
 }
 
-function DecileChartNB({ data, cap, year, display, baseline, yDomain }) {
+function DecileChartNB({ data, cap, year, display, baseline }) {
   const dist = getDistributional(data.results, baseline, cap, year);
   if (!dist) return <p>No data available</p>;
 
@@ -198,6 +182,8 @@ function DecileChartNB({ data, cap, year, display, baseline, yDomain }) {
     };
   });
 
+  const yDomain = computeNiceDomain(chartData.map((d) => d.value));
+
   const formatYTick = (value) => {
     if (isRelative) return `${value}%`;
     return `£${value}`;
@@ -207,9 +193,10 @@ function DecileChartNB({ data, cap, year, display, baseline, yDomain }) {
     <ResponsiveContainer width="100%" height="100%">
       <BarChart
         data={chartData}
-        margin={{ top: 20, right: 30, bottom: 60, left: 70 }}
+        margin={{ top: 30, right: 20, bottom: 50, left: 15 }}
         barCategoryGap="20%"
       >
+        <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
         <XAxis
           dataKey="decile"
           label={{
@@ -222,6 +209,7 @@ function DecileChartNB({ data, cap, year, display, baseline, yDomain }) {
         />
         <YAxis
           domain={yDomain}
+          allowDataOverflow
           label={{
             value: "Change in household income",
             angle: -90,
@@ -247,6 +235,26 @@ function DecileChartNB({ data, cap, year, display, baseline, yDomain }) {
           {chartData.map((entry, index) => (
             <Cell key={`cell-${index}`} fill={entry.fill} />
           ))}
+          <LabelList
+            dataKey="label"
+            content={({ x, y, width, height, value, index }) => {
+              const item = chartData[index];
+              const isNeg = (item?.value ?? 0) < 0;
+              const labelFill = isNeg ? COLORS.gray600 : COLORS.teal700;
+              const barTop = Math.min(y, y + height);
+              const barBottom = Math.max(y, y + height);
+              return (
+                <text
+                  x={x + width / 2}
+                  y={isNeg ? barBottom + 13 : barTop - 5}
+                  textAnchor="middle"
+                  style={{ fontFamily: FONT_FAMILY, fontSize: 10, fill: labelFill }}
+                >
+                  {value}
+                </text>
+              );
+            }}
+          />
         </Bar>
       </BarChart>
     </ResponsiveContainer>
@@ -277,15 +285,23 @@ function WinnersLosersChart({ data, cap, year, baseline }) {
     winners: wl.pct_winners[i],
     losers: -wl.pct_losers[i],
     noChange: wl.pct_no_change[i],
+    winnersLabel: `${wl.pct_winners[i].toFixed(1)}%`,
+    losersLabel: `${wl.pct_losers[i].toFixed(1)}%`,
   }));
+
+  const yDomain = computeNiceDomain([
+    ...chartData.map((d) => d.winners),
+    ...chartData.map((d) => d.losers),
+  ]);
 
   return (
     <ResponsiveContainer width="100%" height="100%">
       <BarChart
         data={chartData}
-        margin={{ top: 20, right: 30, bottom: 60, left: 70 }}
+        margin={{ top: 30, right: 20, bottom: 50, left: 15 }}
         barCategoryGap="20%"
       >
+        <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
         <XAxis
           dataKey="decile"
           label={{
@@ -297,7 +313,8 @@ function WinnersLosersChart({ data, cap, year, baseline }) {
           tick={{ fontFamily: FONT_FAMILY, fontSize: 12 }}
         />
         <YAxis
-          domain={[-20, 30]}
+          domain={yDomain}
+          allowDataOverflow
           tickFormatter={(v) => `${Math.abs(v)}%`}
           label={{
             value: "% of people",
@@ -325,13 +342,48 @@ function WinnersLosersChart({ data, cap, year, baseline }) {
           fill={COLORS.teal500}
           stackId="stack"
           name="winners"
-        />
+        >
+          <LabelList
+            dataKey="winnersLabel"
+            content={({ x, y, width, value, index }) => {
+              if (chartData[index]?.winners === 0) return null;
+              return (
+                <text
+                  x={x + width / 2}
+                  y={y - 5}
+                  textAnchor="middle"
+                  style={{ fontFamily: FONT_FAMILY, fontSize: 10, fill: COLORS.teal700 }}
+                >
+                  {value}
+                </text>
+              );
+            }}
+          />
+        </Bar>
         <Bar
           dataKey="losers"
           fill={COLORS.gray600}
           stackId="stack"
           name="losers"
-        />
+        >
+          <LabelList
+            dataKey="losersLabel"
+            content={({ x, y, width, height, value, index }) => {
+              if (chartData[index]?.losers === 0) return null;
+              const barBottom = Math.max(y, y + height);
+              return (
+                <text
+                  x={x + width / 2}
+                  y={barBottom + 13}
+                  textAnchor="middle"
+                  style={{ fontFamily: FONT_FAMILY, fontSize: 10, fill: COLORS.gray600 }}
+                >
+                  {value}
+                </text>
+              );
+            }}
+          />
+        </Bar>
       </BarChart>
     </ResponsiveContainer>
   );
@@ -345,11 +397,6 @@ export default function NoBehavioralTab() {
   const [year, setYear] = useState(initial.year);
   const [display, setDisplay] = useState(initial.display);
   const [baseline, setBaseline] = useState(initial.baseline);
-
-  const ranges = useMemo(() => {
-    if (!data?.results) return null;
-    return computeGlobalRanges(data.results, baseline);
-  }, [data, baseline]);
 
   useEffect(() => {
     syncQueryParams({ cap, year, display, baseline });
@@ -376,23 +423,63 @@ export default function NoBehavioralTab() {
 
   const baselineLabel =
     baseline === "none" ? "no cap" : `${BASELINE_LABELS[baseline]}`;
-  const decileDomain = display === "relative" ? ranges?.pct : ranges?.abs;
 
   return (
     <>
-      <div className="controls-bar">
-        <BaselineToggle baseline={baseline} onChange={setBaseline} />
-        <YearToggle year={year} onChange={setYear} />
-        <DisplayToggle display={display} onChange={setDisplay} />
-      </div>
-      <div className="cap-slider-group">
-        <h3>Cap level</h3>
-        <CapSelector cap={cap} onChange={setCap} />
+      <p className="intro-text">
+        Salary sacrifice arrangements allow employees to exchange part of their
+        salary for non-cash benefits before tax and National Insurance are
+        calculated. The government announced a &pound;2,000 annual cap on
+        NI-exempt pension salary sacrifice contributions in the{" "}
+        <a href="https://obr.uk/efo/economic-and-fiscal-outlook-october-2025/">
+          Autumn Budget 2025
+        </a>
+        , taking effect from April 2029. Above this threshold, standard NI rates
+        would apply. This tool shows the static impact assuming no behavioural
+        response from employers or employees. See the{" "}
+        <a href="https://www.policyengine.org/uk/research/uk-salary-sacrifice-cap">
+          full report
+        </a>{" "}
+        for methodology.
+      </p>
+      <div className="controls-card">
+        <div className="controls-card-header">
+          <h2>Analysis settings</h2>
+          <button
+            className="calculate-btn"
+            onClick={() =>
+              document
+                .querySelector(".chart-section")
+                ?.scrollIntoView({ behavior: "smooth" })
+            }
+          >
+            Calculate &rarr;
+          </button>
+        </div>
+        <div className="controls-section">
+          <div className="controls-section-label">Policy</div>
+          <div className="controls-row">
+            <BaselineToggle baseline={baseline} onChange={setBaseline} />
+            <div className="control-group">
+              <h3>
+                Cap level
+                <InfoTooltip
+                  title="Cap level"
+                  description="The maximum annual amount that can be contributed through salary sacrifice without paying National Insurance. Contributions above this cap are subject to standard NI rates."
+                />
+              </h3>
+              <CapSelector cap={cap} onChange={setCap} />
+            </div>
+            <YearToggle year={year} onChange={setYear} />
+          </div>
+        </div>
       </div>
       <div className="chart-section">
         <h2>Revenue by cap level</h2>
-        <p className="chart-subtitle">
-          vs {baselineLabel} &middot; {YEAR_LABELS[year]}
+        <p className="section-description">
+          This chart shows estimated government revenue at each cap level
+          assuming no behavioural response. The highlighted bar indicates the
+          currently selected cap.
         </p>
         <div className="chart-container" style={{ height: 350 }}>
           <RevenueByCapChartNB
@@ -400,40 +487,49 @@ export default function NoBehavioralTab() {
             year={year}
             cap={cap}
             baseline={baseline}
-            yDomain={ranges?.revenue}
           />
         </div>
       </div>
       <div className="chart-section">
         <h2>Revenue at {formatCap(cap)} cap</h2>
-        <p className="chart-subtitle">
-          vs {baselineLabel} &middot; {YEAR_LABELS[year]}
+        <p className="section-description">
+          This shows the total estimated revenue at the selected cap level,
+          assuming no behavioural response from employers or employees.
         </p>
         <RevenueSummaryNB data={data} cap={cap} year={year} baseline={baseline} />
       </div>
-      <div className="chart-section">
-        <h2>Distributional impact by income decile</h2>
-        <p className="chart-subtitle">
-          vs {baselineLabel} &middot; {formatCap(cap)} cap, {YEAR_LABELS[year]}
-        </p>
-        <div className="chart-container" style={{ height: 350 }}>
-          <DecileChartNB
-            data={data}
-            cap={cap}
-            year={year}
-            display={display}
-            baseline={baseline}
-            yDomain={decileDomain}
-          />
+      <div className="chart-grid">
+        <div className="chart-section">
+          <h2>Distributional impact by income decile</h2>
+          <p className="section-description">
+            This chart shows the average change in household disposable income
+            for each income decile at the selected cap level.
+          </p>
+          <DisplayToggle display={display} onChange={setDisplay} />
+          <div className="chart-container">
+            <DecileChartNB
+              data={data}
+              cap={cap}
+              year={year}
+              display={display}
+              baseline={baseline}
+            />
+          </div>
         </div>
-      </div>
-      <div className="chart-section">
-        <h2>Winners and losers by income decile</h2>
-        <p className="chart-subtitle">
-          {formatCap(cap)} cap, {YEAR_LABELS[year]}
-        </p>
-        <div className="chart-container" style={{ height: 350 }}>
-          <WinnersLosersChart data={data} cap={cap} year={year} baseline={baseline} />
+        <div className="chart-section">
+          <h2>Winners and losers by income decile</h2>
+          <p className="section-description">
+            This chart shows the percentage of people in each income decile who
+            gain, lose, or are unaffected by the cap.
+          </p>
+          <div className="chart-container">
+            <WinnersLosersChart
+              data={data}
+              cap={cap}
+              year={year}
+              baseline={baseline}
+            />
+          </div>
         </div>
       </div>
     </>

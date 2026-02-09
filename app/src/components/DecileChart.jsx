@@ -8,10 +8,11 @@ import {
   Tooltip,
   Cell,
   ReferenceLine,
+  CartesianGrid,
   LabelList,
 } from "recharts";
 import { COLORS, FONT_FAMILY } from "../config/constants";
-import { formatPct, formatCurrency } from "../utils/formatters";
+import { formatPct, formatCurrency, computeNiceDomain } from "../utils/formatters";
 import { getDistributional } from "../utils/dataTransformers";
 
 export default function DecileChart({
@@ -21,7 +22,6 @@ export default function DecileChart({
   scenario,
   display,
   baseline,
-  yDomain,
 }) {
   const distributional = getDistributional(data, cap, year, scenario, baseline);
 
@@ -48,6 +48,8 @@ export default function DecileChart({
     };
   });
 
+  const yDomain = computeNiceDomain(chartData.map((d) => d.value));
+
   const formatYTick = (value) => {
     if (isRelative) {
       return `${value}%`;
@@ -59,9 +61,10 @@ export default function DecileChart({
     <ResponsiveContainer width="100%" height="100%">
       <BarChart
         data={chartData}
-        margin={{ top: 20, right: 30, bottom: 60, left: 70 }}
+        margin={{ top: 30, right: 20, bottom: 50, left: 15 }}
         barCategoryGap="20%"
       >
+        <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
         <XAxis
           dataKey="decile"
           label={{
@@ -74,6 +77,7 @@ export default function DecileChart({
         />
         <YAxis
           domain={yDomain}
+          allowDataOverflow
           label={{
             value: "Change in total income",
             angle: -90,
@@ -101,8 +105,23 @@ export default function DecileChart({
           ))}
           <LabelList
             dataKey="label"
-            position="top"
-            style={{ fontFamily: FONT_FAMILY, fontSize: 11, fill: "#333" }}
+            content={({ x, y, width, height, value, index }) => {
+              const item = chartData[index];
+              const isNeg = (item?.value ?? 0) < 0;
+              const labelFill = isNeg ? COLORS.gray600 : COLORS.teal700;
+              const barTop = Math.min(y, y + height);
+              const barBottom = Math.max(y, y + height);
+              return (
+                <text
+                  x={x + width / 2}
+                  y={isNeg ? barBottom + 13 : barTop - 5}
+                  textAnchor="middle"
+                  style={{ fontFamily: FONT_FAMILY, fontSize: 10, fill: labelFill }}
+                >
+                  {value}
+                </text>
+              );
+            }}
           />
         </Bar>
       </BarChart>

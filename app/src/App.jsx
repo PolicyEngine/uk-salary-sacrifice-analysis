@@ -1,11 +1,10 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect } from "react";
 import { useSimulationData } from "./hooks/useSimulationData";
 import {
   SCENARIO_LABELS,
   YEAR_LABELS,
   BASELINE_LABELS,
 } from "./config/constants";
-import { computeGlobalRanges } from "./utils/dataTransformers";
 import TabSelector from "./components/TabSelector";
 import ScenarioSelector from "./components/ScenarioSelector";
 import YearToggle from "./components/YearToggle";
@@ -17,6 +16,7 @@ import RevenueSummary from "./components/RevenueSummary";
 import DecileChart from "./components/DecileChart";
 import AffectedShareChart from "./components/AffectedShareChart";
 import NoBehavioralTab from "./components/NoBehavioralTab";
+import InfoTooltip from "./components/InfoTooltip";
 import { formatCap } from "./utils/formatters";
 
 function getInitialState() {
@@ -63,37 +63,77 @@ function BehavioralTab({
 }) {
   const scenario = `${employer}_${employee === "cash" ? "cash" : "maintain"}`;
 
-  const ranges = useMemo(() => {
-    if (!data?.results) return null;
-    return computeGlobalRanges(data.results, baseline);
-  }, [data, baseline]);
-
   const baselineLabel =
     baseline === "none" ? "no cap" : `${BASELINE_LABELS[baseline]}`;
-  const decileDomain = display === "relative" ? ranges?.pct : ranges?.abs;
 
   return (
     <>
-      <div className="controls-bar">
-        <BaselineToggle baseline={baseline} onChange={setBaseline} />
-        <ScenarioSelector
-          employer={employer}
-          employee={employee}
-          onEmployerChange={setEmployer}
-          onEmployeeChange={setEmployee}
-        />
-        <YearToggle year={year} onChange={setYear} />
-        <DisplayToggle display={display} onChange={setDisplay} />
-      </div>
-      <div className="cap-slider-group">
-        <h3>Cap level</h3>
-        <CapSelector cap={cap} onChange={setCap} />
+      <p className="intro-text">
+        Salary sacrifice arrangements allow employees to exchange part of their
+        salary for non-cash benefits before tax and National Insurance are
+        calculated. The government announced a &pound;2,000 annual cap on
+        NI-exempt pension salary sacrifice contributions in the{" "}
+        <a href="https://obr.uk/efo/economic-and-fiscal-outlook-october-2025/">
+          Autumn Budget 2025
+        </a>
+        , taking effect from April 2029. Above this threshold, standard NI rates
+        would apply. This tool models revenue and distributional outcomes under
+        different behavioural assumptions about employer and employee responses.
+        See the{" "}
+        <a href="https://www.policyengine.org/uk/research/uk-salary-sacrifice-cap">
+          full report
+        </a>{" "}
+        for methodology.
+      </p>
+      <div className="controls-card">
+        <div className="controls-card-header">
+          <h2>Analysis settings</h2>
+          <button
+            className="calculate-btn"
+            onClick={() =>
+              document
+                .querySelector(".chart-section")
+                ?.scrollIntoView({ behavior: "smooth" })
+            }
+          >
+            Calculate &rarr;
+          </button>
+        </div>
+        <div className="controls-section">
+          <div className="controls-section-label">Policy</div>
+          <div className="controls-row">
+            <BaselineToggle baseline={baseline} onChange={setBaseline} />
+            <div className="control-group">
+              <h3>
+                Cap level
+                <InfoTooltip
+                  title="Cap level"
+                  description="The maximum annual amount that can be contributed through salary sacrifice without paying National Insurance. Contributions above this cap are subject to standard NI rates."
+                />
+              </h3>
+              <CapSelector cap={cap} onChange={setCap} />
+            </div>
+            <YearToggle year={year} onChange={setYear} />
+          </div>
+        </div>
+        <div className="controls-section">
+          <div className="controls-section-label">Behavioural assumptions</div>
+          <div className="controls-row">
+            <ScenarioSelector
+              employer={employer}
+              employee={employee}
+              onEmployerChange={setEmployer}
+              onEmployeeChange={setEmployee}
+            />
+          </div>
+        </div>
       </div>
       <div className="chart-section">
         <h2>Revenue by cap level</h2>
-        <p className="chart-subtitle">
-          vs {baselineLabel} &middot; {SCENARIO_LABELS[scenario]},{" "}
-          {YEAR_LABELS[year]}
+        <p className="section-description">
+          This chart shows estimated government revenue at each cap level under
+          the selected behavioural scenario. The highlighted bar indicates the
+          currently selected cap.
         </p>
         <div className="chart-container" style={{ height: 350 }}>
           <RevenueByCapChart
@@ -102,14 +142,15 @@ function BehavioralTab({
             scenario={scenario}
             cap={cap}
             baseline={baseline}
-            yDomain={ranges?.revenue}
           />
         </div>
       </div>
       <div className="chart-section">
         <h2>Revenue by scenario at {formatCap(cap)} cap</h2>
-        <p className="chart-subtitle">
-          vs {baselineLabel} &middot; {YEAR_LABELS[year]}
+        <p className="section-description">
+          This table compares revenue across the four behavioural scenarios at
+          the selected cap level: each combination of employer response (spread
+          or absorb cost) and employee response (maintain pension or take cash).
         </p>
         <RevenueSummary
           data={data.results}
@@ -118,37 +159,40 @@ function BehavioralTab({
           baseline={baseline}
         />
       </div>
-      <div className="chart-section">
-        <h2>Distributional impact by income decile</h2>
-        <p className="chart-subtitle">
-          vs {baselineLabel} &middot; {SCENARIO_LABELS[scenario]},{" "}
-          {formatCap(cap)} cap, {YEAR_LABELS[year]}
-        </p>
-        <div className="chart-container" style={{ height: 350 }}>
-          <DecileChart
-            data={data.results}
-            cap={cap}
-            year={year}
-            scenario={scenario}
-            display={display}
-            baseline={baseline}
-            yDomain={decileDomain}
-          />
+      <div className="chart-grid">
+        <div className="chart-section">
+          <h2>Distributional impact by income decile</h2>
+          <p className="section-description">
+            This chart shows the average change in household disposable income
+            for each income decile under the selected scenario and cap level.
+          </p>
+          <DisplayToggle display={display} onChange={setDisplay} />
+          <div className="chart-container">
+            <DecileChart
+              data={data.results}
+              cap={cap}
+              year={year}
+              scenario={scenario}
+              display={display}
+              baseline={baseline}
+            />
+          </div>
         </div>
-      </div>
-      <div className="chart-section">
-        <h2>Share of households affected by decile</h2>
-        <p className="chart-subtitle">
-          {SCENARIO_LABELS[scenario]}, {formatCap(cap)} cap, {YEAR_LABELS[year]}
-        </p>
-        <div className="chart-container" style={{ height: 350 }}>
-          <AffectedShareChart
-            data={data.results}
-            cap={cap}
-            year={year}
-            scenario={scenario}
-            yDomain={ranges?.share}
-          />
+        <div className="chart-section">
+          <h2>Winners and losers by income decile</h2>
+          <p className="section-description">
+            This chart shows the percentage of people in each income decile who
+            gain, lose, or are unaffected by the cap under the selected scenario.
+          </p>
+          <div className="chart-container">
+            <AffectedShareChart
+              data={data.results}
+              cap={cap}
+              year={year}
+              scenario={scenario}
+              baseline={baseline}
+            />
+          </div>
         </div>
       </div>
     </>
@@ -191,7 +235,7 @@ export default function App() {
     <>
       <header className="app-header">
         <div className="header-text">
-          <h1>UK salary sacrifice cap analysis</h1>
+          <h1>Salary sacrifice cap analysis tool</h1>
         </div>
         <TabSelector activeTab={tab} onChange={setTab} />
       </header>
