@@ -1,8 +1,8 @@
 import React from "react";
 
 const TABS = [
-  { id: "no-behavioral", label: "No Behavioural Responses" },
-  { id: "behavioral", label: "Behavioural Responses" },
+  { id: "no-behavioral", label: "No behavioural responses" },
+  { id: "behavioral", label: "Behavioural responses" },
 ];
 
 export default function TabSelector({ activeTab, onChange }) {

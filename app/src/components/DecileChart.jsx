@@ -80,7 +80,7 @@ export default function DecileChart({
           ticks={yTicks}
           allowDataOverflow
           label={{
-            value: "Change in total income",
+            value: "Change in household income",
             angle: -90,
             position: "insideLeft",
             style: {

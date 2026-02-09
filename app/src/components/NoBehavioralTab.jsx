@@ -417,7 +417,7 @@ export default function NoBehavioralTab() {
     return (
       <div className="error-state">
         <p>
-          No behavioural response data not yet generated. Run:{" "}
+          No-behavioural-response data has not been generated yet. Run:{" "}
           <code>salary-sacrifice generate-no-behavioral</code>
         </p>
       </div>
