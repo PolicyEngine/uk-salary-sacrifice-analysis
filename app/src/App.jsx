@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState, useEffect } from "react";
 import { useSimulationData } from "./hooks/useSimulationData";
 import {
@@ -17,8 +19,12 @@ import AffectedShareChart from "./components/AffectedShareChart";
 import InfoTooltip from "./components/InfoTooltip";
 import { formatCap } from "./utils/formatters";
 
+// Read query parameters from the URL during SSR-safe initial state hydration.
+// Returns defaults if window is unavailable (App Router prerender pass).
 function getInitialState() {
-  const params = new URLSearchParams(window.location.search);
+  const search =
+    typeof window === "undefined" ? "" : window.location.search;
+  const params = new URLSearchParams(search);
   return {
     cap: Number(params.get("cap")) || 5000,
     year: Number(params.get("year")) || 2029,
@@ -30,6 +36,7 @@ function getInitialState() {
 }
 
 function syncQueryParams(state) {
+  if (typeof window === "undefined") return;
   const params = new URLSearchParams();
   params.set("cap", state.cap);
   params.set("year", state.year);

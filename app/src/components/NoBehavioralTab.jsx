@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState, useEffect } from "react";
 import { useNoBehavioralData } from "../hooks/useNoBehavioralData";
 import {
@@ -26,8 +28,12 @@ import {
   Cell,
 } from "recharts";
 
+// SSR-safe query parameter helpers — return defaults during the server
+// prerender pass and only touch window once the component is hydrated.
 function getInitialState() {
-  const params = new URLSearchParams(window.location.search);
+  const search =
+    typeof window === "undefined" ? "" : window.location.search;
+  const params = new URLSearchParams(search);
   return {
     cap: Number(params.get("cap")) || 5000,
     year: Number(params.get("year")) || 2029,
@@ -37,6 +43,7 @@ function getInitialState() {
 }
 
 function syncQueryParams(state) {
+  if (typeof window === "undefined") return;
   const params = new URLSearchParams(window.location.search);
   params.set("cap", state.cap);
   params.set("year", state.year);

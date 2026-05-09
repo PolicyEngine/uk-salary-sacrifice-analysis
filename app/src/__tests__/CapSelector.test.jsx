@@ -2,40 +2,34 @@ import { describe, it, expect, vi } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
 import CapSelector from "../components/CapSelector";
 
+// CapSelector renders a <select> populated with the configured CAPS.
 describe("CapSelector", () => {
-  it("renders with the correct formatted value displayed", () => {
+  it("renders with the correct formatted value selected", () => {
     render(<CapSelector cap={2000} onChange={() => {}} />);
-    expect(screen.getByText("\u00a32k")).toBeInTheDocument();
+    expect(screen.getByRole("combobox")).toHaveValue("2000");
   });
 
-  it("renders slider with correct attributes", () => {
+  it("renders an option for the formatted current value", () => {
     render(<CapSelector cap={5000} onChange={() => {}} />);
-    const slider = screen.getByRole("slider");
-    expect(slider).toBeInTheDocument();
-    expect(slider).toHaveValue("5000");
-    expect(slider).toHaveAttribute("min", "0");
-    expect(slider).toHaveAttribute("max", "10000");
-    expect(slider).toHaveAttribute("step", "1000");
+    expect(screen.getByRole("option", { name: "£5k" })).toBeInTheDocument();
   });
 
-  it("displays min and max labels", () => {
+  it("includes both the £0 and £6k boundary options", () => {
     render(<CapSelector cap={2000} onChange={() => {}} />);
-    expect(screen.getByText("\u00a30")).toBeInTheDocument();
-    expect(screen.getByText("\u00a310k")).toBeInTheDocument();
+    expect(screen.getByRole("option", { name: "£0" })).toBeInTheDocument();
+    expect(screen.getByRole("option", { name: "£6k" })).toBeInTheDocument();
   });
 
-  it("calls onChange with numeric value when slider moves", () => {
+  it("calls onChange with numeric value when a different option is chosen", () => {
     const handleChange = vi.fn();
     render(<CapSelector cap={2000} onChange={handleChange} />);
-    const slider = screen.getByRole("slider");
-    fireEvent.change(slider, { target: { value: "4000" } });
+    fireEvent.change(screen.getByRole("combobox"), { target: { value: "4000" } });
     expect(handleChange).toHaveBeenCalledWith(4000);
   });
 
-  it("displays zero cap correctly", () => {
+  it("renders the £0 option even when the current cap is 0", () => {
     render(<CapSelector cap={0} onChange={() => {}} />);
-    // formatCap(0) returns "£0", and it also appears as the min label
-    const zeroElements = screen.getAllByText("\u00a30");
-    expect(zeroElements.length).toBeGreaterThanOrEqual(2);
+    expect(screen.getByRole("combobox")).toHaveValue("0");
+    expect(screen.getByRole("option", { name: "£0" })).toBeInTheDocument();
   });
 });
