@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 
-const DATA_URL = import.meta.env.BASE_URL + "data/simulation-results.json";
+// Vercel serves /public assets at the domain root.
+const DATA_URL = "/data/simulation-results.json";
 
 export function useSimulationData() {
   const [data, setData] = useState(null);

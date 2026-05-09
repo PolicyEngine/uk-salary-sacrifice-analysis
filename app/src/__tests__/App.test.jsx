@@ -34,7 +34,7 @@ describe("App", () => {
     render(<App />);
     await waitFor(() => {
       expect(
-        screen.getByText("UK salary sacrifice cap analysis"),
+        screen.getByText("Salary sacrifice cap analysis tool"),
       ).toBeInTheDocument();
     });
   });
@@ -77,7 +77,7 @@ describe("App", () => {
       screen.getByText("Distributional impact by income decile"),
     ).toBeInTheDocument();
     expect(
-      screen.getByText("Share of households affected by decile"),
+      screen.getByText("Winners and losers by income decile"),
     ).toBeInTheDocument();
   });
 

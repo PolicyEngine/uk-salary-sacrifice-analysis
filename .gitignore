@@ -53,3 +53,11 @@ Thumbs.db
 outputs/
 *.h5
 *.csv
+
+# Frontend (Next.js)
+node_modules/
+app/.next/
+app/out/
+app/next-env.d.ts
+app/*.tsbuildinfo
+.vercel

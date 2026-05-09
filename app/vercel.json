@@ -1,4 +1,4 @@
 {
-  "buildCommand": "bunx vite build --outDir dist --base /",
-  "outputDirectory": "dist"
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "nextjs"
 }
