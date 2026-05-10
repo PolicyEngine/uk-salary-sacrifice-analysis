@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 
 // Vercel serves /public assets at the domain root.
-const DATA_URL = "/data/no-behavioral-results.json";
+const DATA_URL = `${process.env.NEXT_PUBLIC_BASE_PATH || ""}/data/no-behavioral-results.json`;
 
 export function useNoBehavioralData() {
   const [data, setData] = useState(null);
